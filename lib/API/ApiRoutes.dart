@@ -48,4 +48,8 @@ static const String scan_redeem = "/scan/validate-code";
 static const String program_clients_stats = "/merchant/clients/program/";
 static const String program_clients = "/merchant/clients"; 
 static const String merchant_agents = "/users/agents"; 
+
+static const String merchant_wheel = "/wheel/config"; 
+
+
 }

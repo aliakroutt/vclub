@@ -7,7 +7,7 @@ import 'package:vclub/Features/Merchant/Billing/View/Billing.dart';
 import 'package:vclub/Features/Merchant/Clients/View/MerchantClients.dart';
 import 'package:vclub/Features/Merchant/Dashboard/View/MerchantDashboard.dart';
 import 'package:vclub/Features/Merchant/Employee/View/Employe.dart';
-import 'package:vclub/Features/Merchant/FortuneWheel/View/FortuneWheelConfig.dart';
+import 'package:vclub/Features/Merchant/FortuneWheel/View/FortuneWheelHome.dart';
 import 'package:vclub/Features/Merchant/GoogleReview/View/MerchantGoogleReview.dart';
 import 'package:vclub/Features/Merchant/ManageLoyalty/View/ListPrograms.dart';
 import 'package:vclub/Features/Merchant/Rewards/View/MerchantRewards.dart';
@@ -22,7 +22,7 @@ var selectedIndexNavbar = 0.obs;
   MerchantDashboard(),
   ListPrograms(),
   MerchantRewards(),
-  FortuneWheelConfig(),
+  FortuneWheelHome(),
   Employe(),
   MerchantClients(),
   Center(child: AppText("campaigns_merchant".tr)),
