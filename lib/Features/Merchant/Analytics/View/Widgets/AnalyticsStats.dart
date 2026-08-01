@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
 import 'package:vclub/Core/Widgets/animated_entry.dart';
+import 'package:vclub/Features/Merchant/Dashboard/Controllers/MerchantDashController.dart';
+
 
 class AnalyticsStatsColumn extends StatelessWidget {
   const AnalyticsStatsColumn({super.key});
@@ -11,81 +13,137 @@ class AnalyticsStatsColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final controller = MerchantDashboardController.to;
 
-    final stats = [
-      {
-        "title": "total_clients".tr,
-        "value": 2450.0,
-        "suffix": "",
-        "icon": Iconsax.profile_2user,
-        "color": const Color(0xFF6C5CE7),
-        "trend": 12.0,
-        "isPositive": true,
-      },
-      {
-        "title": "active_campaigns".tr,
-        "value": 18.0,
-        "suffix": "",
-        "icon": Iconsax.activity,
-        "color": const Color(0xFF00B894),
-        "trend": 5.0,
-        "isPositive": true,
-      },
-      {
-        "title": "points_issued".tr,
-        "value": 89210.0,
-        "suffix": "",
-        "icon": Iconsax.coin,
-        "color": const Color(0xFFFFC542),
-        "trend": 24.0,
-        "isPositive": true,
-      },
-      {
-        "title": "nfc_scans_30d".tr,
-        "value": 12480.0,
-        "suffix": "",
-        "icon": Iconsax.scan_barcode,
-        "color": const Color(0xFF0984E3),
-        "trend": 18.0,
-        "isPositive": true,
-      },
-    ];
+    return Obx(() {
+      final isLoading =
+          controller.statsLoading.value && !controller.initialLoaded.value;
+      final hasError = controller.statsError.value.isNotEmpty;
+      final stats = controller.stats.value;
 
-    return Column(
-      children: List.generate(stats.length, (index) {
-        final item = stats[index];
-
-        return Padding(
-          padding: EdgeInsets.only(bottom: size.height * 0.015),
-          child: FadeSlide(
-            delayMs: 200 + index * 100,
-            child: _StatCard(
-              title: item["title"].toString(),
-              value: item["value"] as double,
-              suffix: item["suffix"].toString(),
-              icon: item["icon"] as IconData,
-              color: item["color"] as Color,
-              trend: item["trend"] as double,
-              isPositive: item["isPositive"] as bool,
-              isDark: isDark,
-              size: size,
-              delay: index * 80,
+      if (isLoading) {
+        return Column(
+          children: List.generate(
+            4,
+            (index) => Padding(
+              padding: EdgeInsets.only(bottom: size.height * 0.015),
+              child: _StatCardSkeleton(size: size, isDark: isDark),
             ),
           ),
         );
-      }),
-    );
+      }
+
+      if (hasError || stats == null) {
+        return _StatsErrorState(
+          size: size,
+          isDark: isDark,
+          onRetry: controller.fetchStats,
+        );
+      }
+
+      final items = <_StatItem>[
+        _StatItem(
+          title: "total_clients".tr,
+          value: stats.clients.total.toDouble(),
+          suffix: "",
+          subtitle: stats.clients.newThisMonth > 0
+              ? "new_this_month".trParams({
+                  "count": stats.clients.newThisMonth.toString(),
+                })
+              : null,
+          icon: Iconsax.profile_2user,
+          color: const Color(0xFF6C5CE7),
+        ),
+        _StatItem(
+          title: "total_scans".tr,
+          value: stats.scans.total.toDouble(),
+          suffix: "",
+          subtitle: stats.scans.thisMonth > 0
+              ? "new_this_month".trParams({
+                  "count": stats.scans.thisMonth.toString(),
+                })
+              : null,
+          icon: Iconsax.scan_barcode,
+          color: const Color(0xFF0984E3),
+        ),
+        _StatItem(
+          title: "rewards_redeemed".tr,
+          value: stats.rewardsRedeemed.total.toDouble(),
+          suffix: "",
+          subtitle: stats.rewardsRedeemed.thisMonth > 0
+              ? "new_this_month".trParams({
+                  "count": stats.rewardsRedeemed.thisMonth.toString(),
+                })
+              : null,
+          icon: Iconsax.gift,
+          color: const Color(0xFF00B894),
+        ),
+        _StatItem(
+          title: "retention_rate".tr,
+          value: stats.retentionRate,
+          suffix: "%",
+          subtitle: stats.clients.vip > 0
+              ? "vip_clients_count".trParams({
+                  "count": stats.clients.vip.toString(),
+                })
+              : null,
+          icon: Iconsax.chart_2,
+          color: const Color(0xFFFFC542),
+        ),
+      ];
+
+      return Column(
+        children: List.generate(items.length, (index) {
+          final item = items[index];
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: size.height * 0.015),
+            child: FadeSlide(
+              delayMs: 200 + index * 100,
+              child: _StatCard(
+                title: item.title,
+                value: item.value,
+                suffix: item.suffix,
+                subtitle: item.subtitle,
+                icon: item.icon,
+                color: item.color,
+                isDark: isDark,
+                size: size,
+                delay: index * 80,
+              ),
+            ),
+          );
+        }),
+      );
+    });
   }
+}
+
+class _StatItem {
+  final String title;
+  final double value;
+  final String suffix;
+  final String? subtitle;
+  final IconData icon;
+  final Color color;
+
+  _StatItem({
+    required this.title,
+    required this.value,
+    required this.suffix,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+  });
 }
 
 class _StatCard extends StatefulWidget {
   final String title;
   final double value;
   final String suffix;
+  final String? subtitle;
   final IconData icon;
   final Color color;
-  final double trend;
-  final bool isPositive;
   final bool isDark;
   final Size size;
   final int delay;
@@ -94,10 +152,9 @@ class _StatCard extends StatefulWidget {
     required this.title,
     required this.value,
     required this.suffix,
+    required this.subtitle,
     required this.icon,
     required this.color,
-    required this.trend,
-    required this.isPositive,
     required this.isDark,
     required this.size,
     required this.delay,
@@ -132,9 +189,6 @@ class _StatCardState extends State<_StatCard> {
   Widget build(BuildContext context) {
     final size = widget.size;
 
-    final trendColor =
-        widget.isPositive ? const Color(0xFF00B894) : const Color(0xFFFF6B6B);
-
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: size.width * 0.045,
@@ -158,7 +212,7 @@ class _StatCardState extends State<_StatCard> {
       ),
       child: Row(
         children: [
-          /// ICON (premium container)
+          /// ICON
           Container(
             width: size.width * 0.14,
             height: size.width * 0.14,
@@ -187,7 +241,6 @@ class _StatCardState extends State<_StatCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// TITLE
                 AppText(
                   widget.title,
                   fontSize: size.width * 0.034,
@@ -198,10 +251,7 @@ class _StatCardState extends State<_StatCard> {
                       ?.color
                       ?.withOpacity(0.6),
                 ),
-
                 SizedBox(height: size.height * 0.005),
-
-                /// VALUE
                 TweenAnimationBuilder<double>(
                   duration: const Duration(milliseconds: 1100),
                   curve: Curves.easeOutCubic,
@@ -221,48 +271,138 @@ class _StatCardState extends State<_StatCard> {
             ),
           ),
 
-          /// TREND BADGE (modern pill)
-          TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 1100),
-            curve: Curves.easeOutCubic,
-            tween: Tween<double>(
-              begin: 0,
-              end: _start ? widget.trend : 0,
-            ),
-            builder: (context, val, _) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+          /// SUBTITLE PILL (real "+X this month" data, no fake trend %)
+          if (widget.subtitle != null)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                color: widget.color.withOpacity(0.12),
+                border: Border.all(
+                  color: widget.color.withOpacity(0.25),
                 ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  color: trendColor.withOpacity(0.12),
-                  border: Border.all(
-                    color: trendColor.withOpacity(0.25),
+              ),
+              child: AppText(
+                widget.subtitle!,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: widget.color,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCardSkeleton extends StatelessWidget {
+  final Size size;
+  final bool isDark;
+
+  const _StatCardSkeleton({required this.size, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final base = isDark ? Colors.white : Colors.black;
+
+    return Container(
+      height: size.height * 0.1,
+      padding: EdgeInsets.symmetric(horizontal: size.width * 0.045),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: base.withOpacity(0.06)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: size.width * 0.14,
+            height: size.width * 0.14,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: base.withOpacity(0.06),
+            ),
+          ),
+          SizedBox(width: size.width * 0.04),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: size.width * 0.3,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: base.withOpacity(0.06),
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      widget.isPositive
-                          ? Iconsax.arrow_circle_up_copy
-                          : Iconsax.arrow_circle_down_copy,
-                      size: 12,
-                      color: trendColor,
-                    ),
-                    const SizedBox(width: 4),
-                    AppText(
-                      "${widget.isPositive ? '+' : '-'}${val.toStringAsFixed(val % 1 == 0 ? 0 : 1)}%",
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: trendColor,
-                    ),
-                  ],
+                SizedBox(height: size.height * 0.01),
+                Container(
+                  width: size.width * 0.2,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: base.withOpacity(0.08),
+                  ),
                 ),
-              );
-            },
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatsErrorState extends StatelessWidget {
+  final Size size;
+  final bool isDark;
+  final VoidCallback onRetry;
+
+  const _StatsErrorState({
+    required this.size,
+    required this.isDark,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: size.height * 0.03),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.06)
+              : Colors.black.withOpacity(0.04),
+        ),
+      ),
+      child: Column(
+        children: [
+          AppText(
+            "failed_load_stats".tr,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.color
+                ?.withOpacity(0.6),
+          ),
+          SizedBox(height: size.height * 0.012),
+          GestureDetector(
+            onTap: onRetry,
+            child: AppText(
+              "retry".tr,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF6C5CE7),
+            ),
           ),
         ],
       ),

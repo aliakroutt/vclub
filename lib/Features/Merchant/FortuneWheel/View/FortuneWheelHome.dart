@@ -6,10 +6,13 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:vclub/Configs/Theme/app_colors.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
+import 'package:vclub/Core/Navigation/app_navigator.dart';
 import 'package:vclub/Core/Widgets/animated_entry.dart';
+import 'package:vclub/Features/Merchant/FortuneWheel/Controllers/FortuneWheelHistoryController.dart';
 import 'package:vclub/Features/Merchant/FortuneWheel/Controllers/FortuneWheelHomeController.dart';
 import 'package:vclub/Features/Merchant/FortuneWheel/Models/FortuneSegmentModel.dart';
 import 'package:vclub/Features/Merchant/FortuneWheel/View/FortuneWheelConfig.dart';
+import 'package:vclub/Features/Merchant/FortuneWheel/View/HistoryTab.dart';
 
 class FortuneWheelHome extends StatefulWidget {
   const FortuneWheelHome({super.key});
@@ -20,7 +23,15 @@ class FortuneWheelHome extends StatefulWidget {
 
 class _FortuneWheelHomeState extends State<FortuneWheelHome> {
   final controller = Get.put(FortuneWheelHomeController());
+  final historycontroller = Get.put(FortuneWheelHistoryController());
   int _tabIndex = 0;
+
+  @override
+  void initState() {
+    controller.fetchWheelConfig();
+    historycontroller.fetchHistory();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +81,10 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.65)],
+              colors: [
+                AppColors.primary,
+                AppColors.primary.withValues(alpha: 0.65),
+              ],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
@@ -88,13 +102,21 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppText("fortune_wheel", fontSize: 21, fontWeight: FontWeight.w800),
+              AppText(
+                "fortune_wheel",
+                fontSize: 21,
+                fontWeight: FontWeight.w800,
+              ),
               const SizedBox(height: 2),
               AppText(
-                configured ? "wheel_header_subtitle_active" : "wheel_header_subtitle_setup",
+                configured
+                    ? "wheel_header_subtitle_active"
+                    : "wheel_header_subtitle_setup",
                 fontSize: 12.5,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.55),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withValues(alpha: 0.55),
               ),
             ],
           ),
@@ -112,7 +134,10 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: size.height * 0.02),
-          FadeSlide(delayMs: 100, child: _buildHeader(size, isDark, configured: false)),
+          FadeSlide(
+            delayMs: 100,
+            child: _buildHeader(size, isDark, configured: false),
+          ),
           SizedBox(height: size.height * 0.05),
           FadeSlide(
             delayMs: 250,
@@ -149,7 +174,11 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                       ),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Iconsax.gift, size: 46, color: AppColors.primary),
+                    child: Icon(
+                      Iconsax.gift,
+                      size: 46,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   AppText(
@@ -164,11 +193,9 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     textAlign: TextAlign.center,
-                    color: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.color
-                        ?.withValues(alpha: 0.6),
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                   ),
                   const SizedBox(height: 22),
                   Wrap(
@@ -177,8 +204,14 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                     runSpacing: 8,
                     children: const [
                       _MiniPerk(icon: Iconsax.star, labelKey: "perk_points"),
-                      _MiniPerk(icon: Iconsax.discount_shape, labelKey: "perk_discounts"),
-                      _MiniPerk(icon: Iconsax.wallet_money, labelKey: "perk_cashback"),
+                      _MiniPerk(
+                        icon: Iconsax.discount_shape,
+                        labelKey: "perk_discounts",
+                      ),
+                      _MiniPerk(
+                        icon: Iconsax.wallet_money,
+                        labelKey: "perk_cashback",
+                      ),
                       _MiniPerk(icon: Iconsax.gift, labelKey: "perk_gifts"),
                     ],
                   ),
@@ -191,7 +224,10 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                         gradient: LinearGradient(
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
-                          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.75)],
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primary.withValues(alpha: 0.75),
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
@@ -207,16 +243,18 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
                           onTap: () async {
-                            final result = await Get.to(() => const FortuneWheelConfig());
-                            // refresh regardless — cheap, and protects against a
-                            // swallowed / null result from a nav wrapper
+                            //  final result = await Get.to(() => const FortuneWheelConfig());
+                            AppNavigator.to(FortuneWheelConfig(isEdit: false));
                             controller.refresh();
-                            debugPrint('config screen result: $result');
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Iconsax.setting_2, size: 20, color: Colors.white),
+                              const Icon(
+                                Iconsax.setting_2,
+                                size: 20,
+                                color: Colors.white,
+                              ),
                               SizedBox(width: size.width * 0.025),
                               AppText(
                                 "configure_now",
@@ -241,14 +279,21 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
   }
 
   // ---------------- CONFIGURED (TABS) ----------------
-  Widget _buildConfiguredView(Size size, bool isDark, FortuneWheelConfigModel config) {
+  Widget _buildConfiguredView(
+    Size size,
+    bool isDark,
+    FortuneWheelConfigModel config,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: size.height * 0.01),
-          FadeSlide(delayMs: 100, child: _buildHeader(size, isDark, configured: true)),
+          FadeSlide(
+            delayMs: 100,
+            child: _buildHeader(size, isDark, configured: true),
+          ),
           SizedBox(height: size.height * 0.016),
           FadeSlide(delayMs: 160, child: _buildStatsRow(config, isDark)),
           SizedBox(height: size.height * 0.02),
@@ -259,10 +304,10 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
               duration: const Duration(milliseconds: 250),
               child: _tabIndex == 0
                   ? _buildWheelTab(size, isDark, config)
-                  : _buildHistoryTab(size),
+                  :  HistoryTab(key: const ValueKey('history'),
+                  ),
             ),
           ),
-          SizedBox(height: size.height * 0.15),
         ],
       ),
     );
@@ -330,7 +375,10 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
           decoration: BoxDecoration(
             gradient: selected
                 ? LinearGradient(
-                    colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
+                    colors: [
+                      AppColors.primary,
+                      AppColors.primary.withValues(alpha: 0.8),
+                    ],
                   )
                 : null,
             color: selected ? null : Colors.transparent,
@@ -362,7 +410,9 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                 fontWeight: FontWeight.w700,
                 color: selected
                     ? Colors.white
-                    : Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                    : Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
               ),
             ],
           ),
@@ -372,13 +422,20 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
   }
 
   // ---------------- WHEEL TAB ----------------
-  Widget _buildWheelTab(Size size, bool isDark, FortuneWheelConfigModel config) {
+  Widget _buildWheelTab(
+    Size size,
+    bool isDark,
+    FortuneWheelConfigModel config,
+  ) {
     return SingleChildScrollView(
       key: const ValueKey('wheel'),
       physics: const BouncingScrollPhysics(),
       child: Column(
         children: [
-          FadeSlide(delayMs: 250, child: _WheelSummaryCard(config: config, isDark: isDark)),
+          FadeSlide(
+            delayMs: 250,
+            child: _WheelSummaryCard(config: config, isDark: isDark),
+          ),
           SizedBox(height: size.height * 0.02),
           FadeSlide(
             delayMs: 300,
@@ -387,13 +444,15 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
               height: size.height * 0.062,
               child: OutlinedButton(
                 onPressed: () async {
-                  await Get.to(() => const FortuneWheelConfig());
+                  AppNavigator.to(FortuneWheelConfig(isEdit: true));
                   controller.refresh();
                 },
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: AppColors.primary, width: 1.4),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  backgroundColor: AppColors.primary
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  backgroundColor: AppColors.primary,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -411,51 +470,11 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
               ),
             ),
           ),
-          SizedBox(height: size.height * 0.05),
+          SizedBox(height: size.height * 0.15),
         ],
       ),
     );
   }
-
-  // ---------------- HISTORY TAB (empty for now) ----------------
-  Widget _buildHistoryTab(Size size) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Center(
-      key: const ValueKey('history'),
-      child: Padding(
-        padding: EdgeInsets.only(top: size.height * 0.1),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : AppColors.primary.withValues(alpha: 0.06),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Iconsax.clock,
-                  size: 40, color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.35)),
-            ),
-            const SizedBox(height: 18),
-            AppText("history_coming_soon_title", fontSize: 16, fontWeight: FontWeight.w700),
-            const SizedBox(height: 6),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: AppText(
-                "history_coming_soon_subtitle",
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                textAlign: TextAlign.center,
-                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.55),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ---------------- LOADING / MODERN SHIMMER ----------------
   Widget _buildLoadingSkeleton(Size size, bool isDark) {
     final base = isDark
@@ -468,11 +487,7 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
         ? Colors.white.withValues(alpha: 0.08)
         : Colors.black.withValues(alpha: 0.05);
 
-    Widget block({
-      double? width,
-      required double height,
-      double radius = 10,
-    }) {
+    Widget block({double? width, required double height, double radius = 10}) {
       return Container(
         width: width,
         height: height,
@@ -541,7 +556,10 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                       padding: const EdgeInsets.only(right: 8),
                       child: Container(
                         height: 56,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(14),
@@ -611,7 +629,13 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                         shape: BoxShape.circle,
                         border: Border.all(color: base, width: 2),
                       ),
-                      child: ClipOval(child: block(height: double.infinity, width: double.infinity, radius: 999)),
+                      child: ClipOval(
+                        child: block(
+                          height: double.infinity,
+                          width: double.infinity,
+                          radius: 999,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: size.height * 0.03),
@@ -636,7 +660,10 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                   ...List.generate(3, (i) {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: isDark
                             ? Colors.white.withValues(alpha: 0.03)
@@ -666,7 +693,11 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
             baseColor: base,
             highlightColor: highlight,
             period: const Duration(milliseconds: 1500),
-            child: block(height: size.height * 0.062, radius: 16, width: double.infinity),
+            child: block(
+              height: size.height * 0.062,
+              radius: 16,
+              width: double.infinity,
+            ),
           ),
           SizedBox(height: size.height * 0.05),
         ],
@@ -688,18 +719,28 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                 color: Colors.redAccent.withValues(alpha: isDark ? 0.14 : 0.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Iconsax.warning_2, size: 40, color: Colors.redAccent),
+              child: const Icon(
+                Iconsax.warning_2,
+                size: 40,
+                color: Colors.redAccent,
+              ),
             ),
             const SizedBox(height: 18),
-            AppText("failed_load_wheel_config",
-                fontSize: 15, fontWeight: FontWeight.w700, textAlign: TextAlign.center),
+            AppText(
+              "failed_load_wheel_config",
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 6),
             AppText(
               "failed_load_wheel_config_subtitle",
               fontSize: 12.5,
               fontWeight: FontWeight.w400,
               textAlign: TextAlign.center,
-              color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.55),
+              color: Theme.of(
+                context,
+              ).textTheme.bodySmall?.color?.withValues(alpha: 0.55),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -711,14 +752,21 @@ class _FortuneWheelHomeState extends State<FortuneWheelHome> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 22),
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Iconsax.refresh, size: 16, color: Colors.white),
                     const SizedBox(width: 8),
-                    AppText("retry", fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+                    AppText(
+                      "retry",
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ],
                 ),
               ),
@@ -743,7 +791,9 @@ class _MiniPerk extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.035),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.035),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -783,7 +833,9 @@ class _StatPill extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           BoxShadow(
@@ -827,7 +879,9 @@ class _StatPill extends StatelessWidget {
                         labelKey,
                         fontSize: 9.5,
                         fontWeight: FontWeight.w600,
-                        color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.55),
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.color?.withValues(alpha: 0.55),
                       ),
                     ]
                   : [
@@ -875,7 +929,9 @@ class _WheelSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final cardColor = Theme.of(context).cardColor;
-    final subtitleColor = Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6);
+    final subtitleColor = Theme.of(
+      context,
+    ).textTheme.bodySmall?.color?.withValues(alpha: 0.6);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -883,8 +939,9 @@ class _WheelSummaryCard extends StatelessWidget {
         color: cardColor,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color:
-              isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           BoxShadow(
@@ -900,7 +957,11 @@ class _WheelSummaryCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              AppText("wheel_preview", fontSize: 15, fontWeight: FontWeight.w800),
+              AppText(
+                "wheel_preview",
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
               _StatusBadge(active: config.active),
             ],
           ),
@@ -922,7 +983,9 @@ class _WheelSummaryCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          AppColors.primary.withValues(alpha: isDark ? 0.28 : 0.16),
+                          AppColors.primary.withValues(
+                            alpha: isDark ? 0.28 : 0.16,
+                          ),
                           Colors.transparent,
                         ],
                       ),
@@ -934,12 +997,16 @@ class _WheelSummaryCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.14),
+                          color: Colors.black.withValues(
+                            alpha: isDark ? 0.4 : 0.14,
+                          ),
                           blurRadius: 26,
                           offset: const Offset(0, 12),
                         ),
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: isDark ? 0.25 : 0.15),
+                          color: AppColors.primary.withValues(
+                            alpha: isDark ? 0.25 : 0.15,
+                          ),
                           blurRadius: 30,
                           spreadRadius: -6,
                         ),
@@ -965,7 +1032,10 @@ class _WheelSummaryCard extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.7)],
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primary.withValues(alpha: 0.7),
+                          ],
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -976,7 +1046,11 @@ class _WheelSummaryCard extends StatelessWidget {
                         ],
                         border: Border.all(color: cardColor, width: 2),
                       ),
-                      child: const Icon(Iconsax.arrow_down_1_copy, color: Colors.white, size: 14),
+                      child: const Icon(
+                        Iconsax.arrow_down_1_copy,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                     ),
                   ),
                 ],
@@ -987,45 +1061,62 @@ class _WheelSummaryCard extends StatelessWidget {
           const SizedBox(height: 26),
 
           // ---- quick stats: max/day, max/week, active hours ----
-        Column(
-  children: [
-    _QuickStat(
-      icon: Iconsax.calendar_1,
-      color: const Color(0xFFE08A2B),
-      labelKey: "max_per_day",
-      value: "${config.maxPerDay}",
-    ),
+          Column(
+            children: [
+              _QuickStat(
+                icon: Iconsax.calendar_1,
+                color: const Color(0xFFE08A2B),
+                labelKey: "max_per_day",
+                value: "${config.maxPerDay}",
+              ),
 
-    const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-    _QuickStat(
-      icon: Iconsax.calendar_2,
-      color: const Color(0xFF6E56CF),
-      labelKey: "max_per_week",
-      value: "${config.maxPerWeek}",
-    ),
-  ],
-),
+              _QuickStat(
+                icon: Iconsax.calendar_2,
+                color: const Color(0xFF6E56CF),
+                labelKey: "max_per_week",
+                value: "${config.maxPerWeek}",
+              ),
+            ],
+          ),
 
           // ---- triggers ----
           if (config.triggers.isNotEmpty) ...[
             const SizedBox(height: 22),
-            AppText("triggers", fontSize: 12.5, fontWeight: FontWeight.w700, color: subtitleColor),
+            AppText(
+              "triggers",
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: subtitleColor,
+            ),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: config.triggers
-                  .map((t) => _TriggerChip(icon: _triggerIcon(t), labelKey: "trigger_$t", isDark: isDark))
+                  .map(
+                    (t) => _TriggerChip(
+                      icon: _triggerIcon(t),
+                      labelKey: "trigger_$t",
+                      isDark: isDark,
+                    ),
+                  )
                   .toList(),
             ),
           ],
 
           const SizedBox(height: 22),
-          AppText("segments_label", fontSize: 12.5, fontWeight: FontWeight.w700, color: subtitleColor),
+          AppText(
+            "segments_label",
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: subtitleColor,
+          ),
           const SizedBox(height: 10),
-          ...config.segments.map((s) => _SegmentCard(segment: s, isDark: isDark)),
-          
+          ...config.segments.map(
+            (s) => _SegmentCard(segment: s, isDark: isDark),
+          ),
         ],
       ),
     );
@@ -1050,11 +1141,9 @@ class _QuickStat extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final subtitleColor = Theme.of(context)
-        .textTheme
-        .bodySmall
-        ?.color
-        ?.withValues(alpha: .55);
+    final subtitleColor = Theme.of(
+      context,
+    ).textTheme.bodySmall?.color?.withValues(alpha: .55);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1064,44 +1153,26 @@ class _QuickStat extends StatelessWidget {
             ? Colors.white.withValues(alpha: .04)
             : Colors.black.withValues(alpha: .025),
         borderRadius: BorderRadius.circular(14),
-        border: Border(
-          left: BorderSide(
-            color: color,
-            width: 3,
-          ),
-        ),
+        border: Border(left: BorderSide(color: color, width: 3)),
       ),
       child: Row(
         children: [
-
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: color.withValues(alpha: .14),
               borderRadius: BorderRadius.circular(9),
             ),
-            child: Icon(
-              icon,
-              size: 16,
-              color: color,
-            ),
+            child: Icon(icon, size: 16, color: color),
           ),
 
-          SizedBox(width: 10,),
+          SizedBox(width: 10),
 
-          AppText(
-                  labelKey,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-
-                ),
-                Spacer(),
+          AppText(labelKey, fontSize: 11.5, fontWeight: FontWeight.w600),
+          Spacer(),
 
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 5,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: color.withValues(alpha: .10),
               borderRadius: BorderRadius.circular(8),
@@ -1126,14 +1197,20 @@ class _TriggerChip extends StatelessWidget {
   final IconData icon;
   final String labelKey;
   final bool isDark;
-  const _TriggerChip({required this.icon, required this.labelKey, required this.isDark});
+  const _TriggerChip({
+    required this.icon,
+    required this.labelKey,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.035),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.035),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -1166,18 +1243,21 @@ class _SegmentCard extends StatelessWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     // segment.label/value come straight from the backend — plain Text,
     // never AppText/.tr, since they're not translation keys.
-    final subtitleColor = Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.55);
+    final subtitleColor = Theme.of(
+      context,
+    ).textTheme.bodySmall?.color?.withValues(alpha: 0.55);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.025),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.04)
+            : Colors.black.withValues(alpha: 0.025),
         borderRadius: BorderRadius.circular(14),
         border: Border(left: BorderSide(color: segment.color, width: 3)),
       ),
@@ -1194,15 +1274,15 @@ class _SegmentCard extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-                  segment.label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-          Spacer() ,
+            segment.label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -1211,7 +1291,11 @@ class _SegmentCard extends StatelessWidget {
             ),
             child: Text(
               "${segment.probability}%",
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.primary),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
+              ),
             ),
           ),
         ],
@@ -1229,14 +1313,25 @@ class _StatusBadge extends StatelessWidget {
     final color = active ? const Color(0xFF06A247) : const Color(0xFF9E9E9E);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration:
-          BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 7, height: 7, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
           const SizedBox(width: 6),
-          AppText(active ? "active" : "inactive", fontSize: 11, fontWeight: FontWeight.w700, color: color),
+          AppText(
+            active ? "active" : "inactive",
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
         ],
       ),
     );
@@ -1272,10 +1367,7 @@ class _MiniWheelPainter extends CustomPainter {
       final sweep = (s.probability / total) * 2 * pi;
 
       final gradient = RadialGradient(
-        colors: [
-          Color.lerp(s.color, Colors.white, 0.22)!,
-          s.color,
-        ],
+        colors: [Color.lerp(s.color, Colors.white, 0.22)!, s.color],
         radius: 0.95,
       );
       final fillPaint = Paint()
@@ -1289,12 +1381,14 @@ class _MiniWheelPainter extends CustomPainter {
         ..strokeWidth = 1.6;
       canvas.drawArc(segmentRect, startAngle, sweep, true, sepPaint);
 
-      labels.add(_SegmentLabelData(
-        midAngle: startAngle + sweep / 2,
-        sweep: sweep,
-        label: s.label,
-        percent: s.probability,
-      ));
+      labels.add(
+        _SegmentLabelData(
+          midAngle: startAngle + sweep / 2,
+          sweep: sweep,
+          label: s.label,
+          percent: s.probability,
+        ),
+      );
 
       startAngle += sweep;
     }
@@ -1322,7 +1416,11 @@ class _MiniWheelPainter extends CustomPainter {
         center.dx + (radius - 2) * cos(angle),
         center.dy + (radius - 2) * sin(angle),
       );
-      canvas.drawCircle(dotCenter, 1.6, Paint()..color = Colors.white.withValues(alpha: 0.9));
+      canvas.drawCircle(
+        dotCenter,
+        1.6,
+        Paint()..color = Colors.white.withValues(alpha: 0.9),
+      );
     }
 
     // segment labels — title (if the slice is wide enough) + percentage
@@ -1351,7 +1449,12 @@ class _MiniWheelPainter extends CustomPainter {
     );
   }
 
-  void _paintSegmentLabel(Canvas canvas, Offset center, double radius, _SegmentLabelData d) {
+  void _paintSegmentLabel(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    _SegmentLabelData d,
+  ) {
     // narrow slices only get the percentage, wide ones also get a short title
     final showTitle = d.sweep > 0.55;
     final textRadius = radius * (showTitle ? 0.66 : 0.6);
@@ -1370,7 +1473,9 @@ class _MiniWheelPainter extends CustomPainter {
     }
     canvas.rotate(rotation);
 
-    const shadow = [Shadow(color: Colors.black45, blurRadius: 3, offset: Offset(0, 1))];
+    const shadow = [
+      Shadow(color: Colors.black45, blurRadius: 3, offset: Offset(0, 1)),
+    ];
 
     if (showTitle) {
       final titlePainter = TextPainter(
@@ -1386,7 +1491,10 @@ class _MiniWheelPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
         maxLines: 1,
       )..layout();
-      titlePainter.paint(canvas, Offset(-titlePainter.width / 2, -titlePainter.height - 1));
+      titlePainter.paint(
+        canvas,
+        Offset(-titlePainter.width / 2, -titlePainter.height - 1),
+      );
     }
 
     final percentPainter = TextPainter(
