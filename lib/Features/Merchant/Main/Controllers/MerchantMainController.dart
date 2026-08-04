@@ -1,10 +1,8 @@
-
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:vclub/Configs/Theme/app_text.dart';
 import 'package:vclub/Features/Merchant/Analytics/View/AnalyticsScreen.dart';
 import 'package:vclub/Features/Merchant/Billing/View/Billing.dart';
 import 'package:vclub/Features/Merchant/Clients/View/MerchantClients.dart';
+import 'package:vclub/Features/Merchant/Compains/View/Compains.dart';
 import 'package:vclub/Features/Merchant/Dashboard/View/MerchantDashboard.dart';
 import 'package:vclub/Features/Merchant/Employee/View/Employe.dart';
 import 'package:vclub/Features/Merchant/FortuneWheel/View/FortuneWheelHome.dart';
@@ -25,7 +23,7 @@ var selectedIndexNavbar = 0.obs;
   FortuneWheelHome(),
   Employe(),
   MerchantClients(),
-  Center(child: AppText("campaigns_merchant".tr)),
+  Compains(),
   AnalyticsScreen(),
   MerchantGoogleReview(),
   Settings(),

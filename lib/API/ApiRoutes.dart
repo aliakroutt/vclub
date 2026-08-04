@@ -50,7 +50,7 @@ static const String program_clients = "/merchant/clients";
 static const String merchant_agents = "/users/agents"; 
 
 static const String merchant_wheel = "/wheel/config"; 
-static const String merchant_wheel_history = "/wheel/merchant/wheel-spins";
-
+static const String merchant_wheel_history = "/wheel/merchant/wheel-spins"; 
+static const String merchant_compaigns = "/campaigns"; 
 
 }
