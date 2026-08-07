@@ -137,7 +137,7 @@ class _CompainsState extends State<Compains> {
 
                     if (controller.campaigns.isEmpty) {
                       return CampaignEmptyState(onCreate: () {
-                       
+                       showCreateCampaignSheet(context);
                       });
                     }
 

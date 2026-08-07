@@ -51,6 +51,8 @@ static const String merchant_agents = "/users/agents";
 
 static const String merchant_wheel = "/wheel/config"; 
 static const String merchant_wheel_history = "/wheel/merchant/wheel-spins"; 
-static const String merchant_compaigns = "/campaigns"; 
-
+static const String merchant_compaigns = "/campaigns";  
+static const String merchant_notifications_send = "/notifications/sent";  
+static const String merchant_notifications_compose = "/notifications/send"; 
+static const String merchant_activity = "/merchant/activity";
 }

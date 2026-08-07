@@ -18,6 +18,8 @@ import 'package:vclub/Features/Client/Notifications/Controllers/ClientNotificati
 import 'package:vclub/Features/Client/Rewards/Controllers/RewardsClientController.dart';
 import 'package:vclub/Features/Merchant/Dashboard/Controllers/MerchantDashController.dart';
 import 'package:vclub/Features/Merchant/ManageLoyalty/Controllers/MerchantProgramsController.dart';
+import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/ComposeNotificationController.dart';
+import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsController.dart';
 
 Future<void> main() async {
   
@@ -70,6 +72,8 @@ class MyApp extends StatelessWidget {
         Get.put(GoogleReviewController(), permanent: true); 
         Get.put(MerchantDashboardController(), permanent: true);  
         Get.put(MerchantProgramsController(), permanent: true); 
+        Get.put(MerchantNotificationsController(), permanent: true);
+        Get.put(ComposeNotificationController(), permanent: true);
       }),
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

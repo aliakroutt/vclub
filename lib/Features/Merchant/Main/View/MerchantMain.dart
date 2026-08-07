@@ -74,7 +74,7 @@ class _MainScreenMerchantState extends State<MainScreenMerchant> {
                     } else if (value == 2) {
                       controller.selectIndex(4);
                     } else if (value == 3) {
-                      controller.selectIndex(9);
+                      controller.selectIndex(10);
                     }
                   },
                   onAddTap: () {

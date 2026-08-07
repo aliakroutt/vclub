@@ -107,7 +107,7 @@ class CampaignEmptyState extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40),
+        padding: const EdgeInsets.symmetric(vertical: 40 ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -137,16 +137,19 @@ class CampaignEmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 22),
-            ElevatedButton.icon(
-              onPressed: onCreate,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            Padding(
+              padding: const EdgeInsets.only(bottom:120),
+              child: ElevatedButton.icon(
+                onPressed: onCreate,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: AppText('new_campaign', fontSize: 13.5, fontWeight: FontWeight.w700, color: Colors.white),
               ),
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: AppText('new_campaign', fontSize: 13.5, fontWeight: FontWeight.w700, color: Colors.white),
             ),
           ],
         ),
@@ -186,16 +189,19 @@ class CampaignErrorState extends StatelessWidget {
               color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
             ),
             const SizedBox(height: 18),
-            OutlinedButton.icon(
-              onPressed: onRetry,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                side: BorderSide(color: AppColors.primary),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            Padding(
+              padding: const EdgeInsets.only(bottom:120),
+              child: OutlinedButton.icon(
+                onPressed: onRetry,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: BorderSide(color: AppColors.primary),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                icon: const Icon(Icons.refresh_rounded, size: 17),
+                label: AppText('retry', fontSize: 13, fontWeight: FontWeight.w700),
               ),
-              icon: const Icon(Icons.refresh_rounded, size: 17),
-              label: AppText('retry', fontSize: 13, fontWeight: FontWeight.w700),
             ),
           ],
         ),
