@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:vclub/API/ApiClient.dart';
 import 'package:vclub/API/ApiRoutes.dart';
