@@ -12,6 +12,7 @@ import 'package:vclub/Core/Widgets/AppLoader.dart';
 import 'package:vclub/Features/Auth/Services/ClientService.dart';
 import 'package:vclub/Features/Auth/Services/MerchantService.dart';
 import 'package:vclub/Features/Client/Main/Views/MainScreen.dart';
+import 'package:vclub/Features/Merchant/Main/Controllers/MerchantMainController.dart';
 import 'package:vclub/Features/Merchant/Main/View/MerchantMain.dart';
 
 class LoginController extends GetxController {
@@ -121,6 +122,7 @@ class LoginController extends GetxController {
           await TokenStorage.saveCompanyId(companyId);
 
           final profile = await MerchantService.profile();
+
           AppLoader.hide();
 
           if (profile == null) {
@@ -128,6 +130,12 @@ class LoginController extends GetxController {
             return;
           }
           await MerchantController.to.saveMerchant(profile);
+          if (MerchantController.to.isFreePlan) {
+            final mainController = Get.isRegistered<MerchantMainController>()
+                ? Get.find<MerchantMainController>()
+                : Get.put(MerchantMainController());
+            mainController.selectIndex(11);
+          }
         }
 
         switch (TokenStorage.userRole) {

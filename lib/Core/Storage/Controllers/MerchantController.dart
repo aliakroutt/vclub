@@ -9,6 +9,18 @@ class MerchantController extends GetxController {
 
   bool get isLogged => merchant.value != null;
 
+  /// True when the merchant has no active paid subscription
+  /// (no plan selected yet, or subscription isn't active).
+  bool get isFreePlan {
+    final company = merchant.value?.company;
+    if (company == null) return true;
+
+    final hasPlan = company.stripePlan != null && company.stripePlan!.isNotEmpty;
+    final hasActiveSubscription = company.hasSubscription && company.isSubscriptionActive;
+
+    return !hasPlan || !hasActiveSubscription;
+  }
+
   Future<void> saveMerchant(MerchantProfileModel model) async {
     merchant.value = model;
     await UserStorage.saveMerchant(model);

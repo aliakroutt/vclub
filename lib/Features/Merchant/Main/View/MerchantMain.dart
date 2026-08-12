@@ -24,6 +24,7 @@ class MainScreenMerchant extends StatefulWidget {
 
 class _MainScreenMerchantState extends State<MainScreenMerchant> {
   final controller = Get.put(MerchantMainController());
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -53,18 +54,24 @@ class _MainScreenMerchantState extends State<MainScreenMerchant> {
             controller: controller,
             themeService: Get.find<ThemeService>(),
           ),
-        ), // we will build next
+        ),
 
         body: Stack(
           children: [
             Obx(() {
               return controller.pages[controller.selectedIndex.value];
             }),
-            Positioned(
-              bottom: 5,
-              child: Obx(
-                () => GlassNavBar(
-                  // controller: controller,
+
+            Obx(() {
+              // Hide the floating navbar entirely for merchants without an
+              // active plan — mirrors the drawer's restricted menu behavior.
+              if (MerchantController.to.isFreePlan) {
+                return const SizedBox.shrink();
+              }
+
+              return Positioned(
+                bottom: 5,
+                child: GlassNavBar(
                   selectedIndex: controller.selectedIndex.value,
                   onItemTapped: (int value) {
                     if (value == 0) {
@@ -72,28 +79,26 @@ class _MainScreenMerchantState extends State<MainScreenMerchant> {
                     } else if (value == 1) {
                       controller.selectIndex(value);
                     } else if (value == 2) {
-                      controller.selectIndex(4);
+                      controller.selectIndex(2);
                     } else if (value == 3) {
                       controller.selectIndex(10);
                     }
                   },
                   onAddTap: () {
                     Future.delayed(const Duration(milliseconds: 500), () {
-                      if (mounted) Get.to(QrScannerMerchant(isRedeem: false,));
+                      if (mounted) Get.to(QrScannerMerchant(isRedeem: false));
                     });
                   },
-
                   onRedeemTap: () {
                     Future.delayed(const Duration(milliseconds: 500), () {
-                      if (mounted) Get.to(QrScannerMerchant(isRedeem: true,));
+                      if (mounted) Get.to(QrScannerMerchant(isRedeem: true));
                     });
                   },
                 ),
-              ),
-            ),
+              );
+            }),
           ],
         ),
-       
       ),
     );
   }

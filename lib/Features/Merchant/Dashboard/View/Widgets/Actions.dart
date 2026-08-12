@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
-import 'package:vclub/Features/Client/QRScanner/View/QrScanner.dart';
 import 'package:vclub/Features/Merchant/Main/Controllers/MerchantMainController.dart';
 
 class DashboardActions extends StatelessWidget {
@@ -13,12 +12,12 @@ class DashboardActions extends StatelessWidget {
     final size = MediaQuery.of(context).size;
    final controller = Get.put(MerchantMainController());
     final actions = [
-      (
-        title: "scan_client_dash".tr,
-        subtitle: "scan_client_subtitle_dash".tr,
-        icon: Iconsax.scan_barcode,
-        color: const Color(0xFF6C5CE7),
-      ),
+      // (
+      //   title: "scan_client_dash".tr,
+      //   subtitle: "scan_client_subtitle_dash".tr,
+      //   icon: Iconsax.scan_barcode,
+      //   color: const Color(0xFF6C5CE7),
+      // ),
       (
         title: "clients_dash".tr,
         subtitle: "clients_subtitle_dash".tr,
@@ -51,14 +50,12 @@ class DashboardActions extends StatelessWidget {
             color: actions[i].color,
             onTap: () {
             if ( i == 0) {
-             Get.to(QrScannerScreen());
-            } else if (i==1) {
               controller.selectIndex(5);
+            } else if (i==1) {
+              controller.selectIndex(2);
             }else if (i==2){
-               controller.selectIndex(2);
-            } else if (i==3) {
-             controller.selectIndex(1);
-            } else {
+              controller.selectIndex(1);
+            }  else {
 
             }
             },

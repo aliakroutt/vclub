@@ -241,6 +241,42 @@ class CompanyModel {
       googleReviewLink: json['googleReviewLink']?.toString(),
     );
   }
+  CompanyModel copyWithGoogleReviewLink(String link) {
+  return CompanyModel(
+    id: id,
+    name: name,
+    tradeName: tradeName,
+    siret: siret,
+    uid: uid,
+    slug: slug,
+    qrUrl: qrUrl,
+    industry: industry,
+    countryCode: countryCode,
+    currencyCode: currencyCode,
+    timezone: timezone,
+    contactEmail: contactEmail,
+    contactPhone: contactPhone,
+    address: address,
+    status: status,
+    subscriptionStatus: subscriptionStatus,
+    stripePlan: stripePlan,
+    smsAddon: smsAddon,
+    subscriptionEndsAt: subscriptionEndsAt,
+    cancelAtPeriodEnd: cancelAtPeriodEnd,
+    hasSubscription: hasSubscription,
+    manualSubscription: manualSubscription,
+    manualActivatedAt: manualActivatedAt,
+    hasBillingAccount: hasBillingAccount,
+    logo: logo,
+    facebook: facebook,
+    instagram: instagram,
+    linkedin: linkedin,
+    twitter: twitter,
+    youtube: youtube,
+    tiktok: tiktok,
+    googleReviewLink: link,
+  );
+}
 
   Map<String, dynamic> toJson() {
     return {
@@ -346,4 +382,20 @@ class MerchantProfileModel {
       'company': company?.toJson(),
     };
   }
+  MerchantProfileModel copyWithCompanyLink(String link) {
+  return MerchantProfileModel(
+    id: id,
+    email: email,
+    firstName: firstName,
+    lastName: lastName,
+    phone: phone,
+    language: language,
+    role: role,
+    isActive: isActive,
+    hasPaid: hasPaid,
+    billingLocked: billingLocked,
+    entitlements: entitlements,
+    company: company?.copyWithGoogleReviewLink(link),
+  );
+}
 }

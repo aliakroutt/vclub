@@ -36,8 +36,8 @@ class _GlassNavBarState extends State<GlassNavBar>
     _NavMeta(icon: Iconsax.home_1, activeIcon: Iconsax.home, label: 'Home'),
     _NavMeta(icon: Iconsax.crown_1, activeIcon: Iconsax.crown, label: 'Loyalty'),
     _NavMeta(
-      icon: Iconsax.profile_2user,
-      activeIcon: Iconsax.profile_circle,
+      icon: Iconsax.gift,
+      activeIcon: Iconsax.gift,
       label: 'Users',
     ),
     _NavMeta(icon: Iconsax.setting_2, activeIcon: Iconsax.setting, label: 'Settings'),
@@ -229,7 +229,7 @@ class _GlassPill extends StatelessWidget {
                     SizedBox(width: itemSize),
                     _GlassNavItem(
                       meta: items[2],
-                      isSelected: selectedIndex == 4,
+                      isSelected: selectedIndex == 2,
                       size: itemSize,
                       iconSize: iconSize,
                       onTap: () {
@@ -239,7 +239,7 @@ class _GlassPill extends StatelessWidget {
                     ),
                     _GlassNavItem(
                       meta: items[3],
-                      isSelected: selectedIndex == 9,
+                      isSelected: selectedIndex == 10,
                       size: itemSize,
                       iconSize: iconSize,
                       onTap: () {

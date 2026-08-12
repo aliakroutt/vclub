@@ -56,5 +56,18 @@ static const String merchant_notifications_send = "/notifications/sent";
 static const String merchant_notifications_compose = "/notifications/send"; 
 static const String merchant_activity = "/merchant/activity"; 
 static const String merchant_redemptions = "/merchant/redemptions"; 
-static const String merchant_audit = "/merchant/audit";
+static const String merchant_audit = "/merchant/audit"; 
+static const String merchant_SMS = "/stripe/addons/sms";
+static const String merchant_update_SMS = "/stripe/sms-addon"; 
+static const String merchant_reactivate = "/stripe/resume-subscription"; 
+static const String merchant_cancel_plan = "/stripe/cancel-subscription"; 
+static const String merchant_plans = "/stripe/plans/public";
+static const String merchant_change_plan = "/stripe/change-plan";
+static const String merchant_invoices_history = "/transactions/my-company"; 
+static const String merchant_portal = "/stripe/portal"; 
+static const String merchant_resubscribe = "/stripe/resubscribe"; 
+static const String merchant_loyalty_program = "/loyalty/program";
+static const String merchant_rewards_list= "/rewards"; 
+static const String merchant_my_company= "/companies/my-company";
+
 }
