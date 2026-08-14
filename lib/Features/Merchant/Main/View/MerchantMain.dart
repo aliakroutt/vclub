@@ -13,7 +13,10 @@ import 'package:vclub/Features/Merchant/Main/View/Widgets/AppBarMerchant.dart';
 import 'package:vclub/Features/Merchant/Main/View/Widgets/DrawerMerchant.dart';
 import 'package:vclub/Features/Merchant/Main/View/Widgets/MerchantNavBar.dart';
 import 'package:vclub/Features/Merchant/ManageLoyalty/Controllers/MerchantProgramsController.dart';
+import 'package:vclub/Features/Merchant/NotificationsMerchant/View/NotificationsMerchant.dart';
 import 'package:vclub/Features/Merchant/QRScanner/QrSCanner.dart';
+import 'package:vclub/Features/Merchant/QRcode/View/MerchantQrCodeScreen.dart';
+import 'package:vclub/Features/Merchant/QRcode/View/SlideUpRoute.dart';
 
 class MainScreenMerchant extends StatefulWidget {
   const MainScreenMerchant({super.key});
@@ -33,6 +36,14 @@ class _MainScreenMerchantState extends State<MainScreenMerchant> {
         extendBody: true,
         resizeToAvoidBottomInset: false,
         appBar: MainAppBarMerchant(
+          onQrTap: () {
+            Navigator.of(
+              context,
+            ).push(SlideUpRoute(page: const MerchantQrCodeScreen()));
+          },
+          onNotificationTap: () {
+            AppNavigator.to(NotificationsInboxMerchant());
+          },
           themeService: Get.find<ThemeService>(),
           onLogout: () {
             showLogoutBottomSheet(

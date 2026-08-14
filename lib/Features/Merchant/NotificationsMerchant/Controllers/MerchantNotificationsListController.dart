@@ -1,0 +1,116 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:vclub/Core/Snackbars.dart';
+import 'package:vclub/Features/Merchant/NotificationsMerchant/Models/MerchantNotificationsModel.dart';
+
+import 'package:vclub/Features/Merchant/NotificationsMerchant/Services/MerchantNotificationsApiClient.dart';
+
+
+class MerchantNotificationsListController extends GetxController {
+  final RxList<MerchantNotificationModel> notifications = <MerchantNotificationModel>[].obs;
+
+  final RxBool notificationsLoading = false.obs;
+
+  final RxBool loadingMore = false.obs;
+
+  final RxString notificationsError = "".obs;
+
+  final RxInt currentPage = 1.obs;
+
+  final RxInt totalPages = 1.obs;
+
+  final RxInt unread = 0.obs;
+
+  final RxBool initialLoaded = false.obs;
+  final RxBool markAllLoading = false.obs;
+
+  // mark all read
+  Future<void> markAllNotificationsAsRead() async {
+    if (markAllLoading.value) return;
+
+    try {
+      markAllLoading.value = true;
+
+      await MerchantNotificationsApiClient.markNotificationAsReadAll();
+
+      await fetchNotifications();
+      markAllLoading.value = false;
+    } catch (e) {
+      markAllLoading.value = false;
+      debugPrint(e.toString());
+    } finally {
+    }
+  }
+
+  // get notifications
+  Future<void> fetchNotifications() async {
+    try {
+      if (!initialLoaded.value) {
+        notificationsLoading.value = true;
+      }
+      notificationsError.value = "";
+      currentPage.value = 1;
+      final result = await MerchantNotificationsApiClient.getNotifications(
+        page: currentPage.value,
+        limit: 20,
+      );
+      notifications.assignAll(result.notifications);
+      unread.value = result.unread;
+      totalPages.value = result.totalPages;
+      initialLoaded.value = true;
+    } catch (e) {
+      notificationsError.value = "failed_load_notifications".tr;
+      AppSnackBar.error("failed_load_notifications".tr);
+    } finally {
+      notificationsLoading.value = false;
+    }
+  }
+
+  // load more
+  Future<void> loadMoreNotifications() async {
+    if (loadingMore.value) return;
+    if (currentPage.value >= totalPages.value) {
+      return;
+    }
+    try {
+      loadingMore.value = true;
+      final nextPage = currentPage.value + 1;
+      final result = await MerchantNotificationsApiClient.getNotifications(
+        page: nextPage,
+        limit: 20,
+      );
+      notifications.addAll(result.notifications);
+      currentPage.value = result.page;
+      totalPages.value = result.totalPages;
+    } catch (e) {
+      AppSnackBar.error("failed_load_notifications".tr);
+    } finally {
+      loadingMore.value = false;
+    }
+  }
+
+  // mark notif use read
+  Future<void> markNotificationAsRead(String notifId) async {
+    try {
+      await MerchantNotificationsApiClient.markNotificationAsRead(notifId);
+
+      // reload notifications after success
+      await fetchNotifications();
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  void resetNotifications() {
+    notifications.clear();
+
+    currentPage.value = 1;
+    totalPages.value = 1;
+
+    unread.value = 0;
+    notificationsLoading.value = false;
+    loadingMore.value = false;
+    notificationsError.value = "";
+    initialLoaded.value = false;
+  }
+}

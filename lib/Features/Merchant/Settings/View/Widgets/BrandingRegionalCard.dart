@@ -3,12 +3,28 @@ import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
 import 'package:vclub/Features/Merchant/Settings/Controllers/SettingsController.dart';
+import 'ColorField.dart';
+import 'EnumSelectField.dart';
 import 'SectionUpdateButton.dart';
 
-class AddressCard extends StatelessWidget {
-  const AddressCard({super.key});
+class BrandingRegionalCard extends StatelessWidget {
+  const BrandingRegionalCard({super.key});
 
-  static const _accent = Color(0xFF00B894);
+  static const _accent = Color(0xFFFFA53E);
+
+  static const _currencyOptions = [
+    EnumOption(value: "EUR", label: "Euro (EUR)"),
+    EnumOption(value: "TND", label: "Tunisian Dinar (TND)"),
+    EnumOption(value: "MAD", label: "Moroccan Dirham (MAD)"),
+    EnumOption(value: "DZD", label: "Algerian Dinar (DZD)"),
+    EnumOption(value: "USD", label: "US Dollar (USD)"),
+  ];
+
+  static const _languageOptions = [
+    EnumOption(value: "fr", label: "Français"),
+    EnumOption(value: "en", label: "English"),
+    EnumOption(value: "ar", label: "العربية"),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +35,8 @@ class AddressCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(size.width * .045),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
+        color: Theme.of(context).colorScheme.surface,
         border: Border.all(color: isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.05)),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(isDark ? .22 : .04), blurRadius: 16, offset: const Offset(0, 4)),
@@ -35,26 +51,48 @@ class AddressCard extends StatelessWidget {
                 width: size.width * .105,
                 height: size.width * .105,
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: _accent.withOpacity(.10)),
-                child: Icon(Iconsax.location, color: _accent, size: size.width * .052),
+                child: Icon(Iconsax.brush_1, color: _accent, size: size.width * .052),
               ),
               SizedBox(width: size.width * .035),
-              Expanded(child: AppText("address".tr, fontSize: size.width * .042, fontWeight: FontWeight.w700)),
+              Expanded(child: AppText("branding_regional".tr, fontSize: size.width * .042, fontWeight: FontWeight.w700)),
             ],
           ),
           SizedBox(height: size.height * .025),
 
-          _ModernField(controller: controller.streetController, label: "street".tr, icon: Iconsax.route_square),
+          Row(
+            children: [
+              Expanded(child: ColorField(controller: controller.brandColorController, label: "brand_color".tr)),
+              SizedBox(width: size.width * .03),
+              Expanded(child: ColorField(controller: controller.secondaryColorController, label: "secondary_color".tr)),
+            ],
+          ),
           SizedBox(height: size.height * .018),
-          _ModernField(controller: controller.houseNumberController, label: "house_number".tr, icon: Iconsax.building, keyboardType: TextInputType.number),
+
+          _ModernField(controller: controller.countryCodeController, label: "country_code".tr, icon: Iconsax.flag, hint: "TN"),
           SizedBox(height: size.height * .018),
-          _ModernField(controller: controller.postalCodeController, label: "postal_code".tr, icon: Iconsax.map, keyboardType: TextInputType.number),
+
+          Obx(() => EnumSelectField(
+                label: "currency".tr,
+                selectedValue: controller.currencyCode.value,
+                options: _currencyOptions,
+                sheetTitle: "select_currency".tr,
+                onSelected: controller.setCurrencyCode,
+              )),
           SizedBox(height: size.height * .018),
-          _ModernField(controller: controller.cityController, label: "city".tr, icon: Iconsax.buildings),
+
+          _ModernField(controller: controller.timezoneController, label: "timezone".tr, icon: Iconsax.clock, hint: "Africa/Tunis"),
           SizedBox(height: size.height * .018),
-          _ModernField(controller: controller.countryController, label: "country".tr, icon: Iconsax.global),
+
+          Obx(() => EnumSelectField(
+                label: "language".tr,
+                selectedValue: controller.language.value,
+                options: _languageOptions,
+                sheetTitle: "select_language".tr,
+                onSelected: controller.setLanguage,
+              )),
 
           SizedBox(height: size.height * .022),
-          Obx(() => SectionUpdateButton(loading: controller.savingAddress.value, onTap: controller.saveAddress)),
+          Obx(() => SectionUpdateButton(loading: controller.savingBranding.value, onTap: controller.saveBranding)),
         ],
       ),
     );
@@ -65,9 +103,9 @@ class _ModernField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final IconData icon;
-  final TextInputType keyboardType;
+  final String? hint;
 
-  const _ModernField({required this.controller, required this.label, required this.icon, this.keyboardType = TextInputType.text});
+  const _ModernField({required this.controller, required this.label, required this.icon, this.hint});
 
   @override
   Widget build(BuildContext context) {
@@ -94,9 +132,13 @@ class _ModernField extends StatelessWidget {
               Expanded(
                 child: TextField(
                   controller: controller,
-                  keyboardType: keyboardType,
                   style: TextStyle(fontSize: size.width * .034, fontWeight: FontWeight.w600),
-                  decoration: const InputDecoration(border: InputBorder.none, isCollapsed: true),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    isCollapsed: true,
+                    hintText: hint,
+                    hintStyle: TextStyle(color: Colors.grey.withOpacity(.5)),
+                  ),
                 ),
               ),
               SizedBox(width: size.width * .035),

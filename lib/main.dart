@@ -20,6 +20,7 @@ import 'package:vclub/Features/Merchant/Dashboard/Controllers/MerchantDashContro
 import 'package:vclub/Features/Merchant/ManageLoyalty/Controllers/MerchantProgramsController.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/ComposeNotificationController.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsController.dart';
+import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsListController.dart';
 
 Future<void> main() async {
   
@@ -74,6 +75,7 @@ class MyApp extends StatelessWidget {
         Get.put(MerchantProgramsController(), permanent: true); 
         Get.put(MerchantNotificationsController(), permanent: true);
         Get.put(ComposeNotificationController(), permanent: true);
+        Get.put(MerchantNotificationsListController(), permanent: true);
       }),
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

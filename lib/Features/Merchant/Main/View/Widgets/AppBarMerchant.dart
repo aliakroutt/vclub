@@ -5,15 +5,20 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:vclub/Configs/Theme/app_colors.dart';
 import 'package:vclub/Configs/Theme/theme_service.dart';
 import 'package:vclub/Features/Client/Main/Views/Widgets/AppBarLanguageSelector.dart';
+import 'package:vclub/Features/Merchant/Main/View/Widgets/NotificationAppBarMerchant.dart';
 
 class MainAppBarMerchant extends StatefulWidget implements PreferredSizeWidget {
   final ThemeService themeService;
   final VoidCallback onLogout;
+  final VoidCallback onNotificationTap;
+  final VoidCallback onQrTap;
 
   const MainAppBarMerchant({
     super.key,
     required this.themeService,
     required this.onLogout,
+    required this.onNotificationTap,
+    required this.onQrTap,
   });
 
   @override
@@ -59,7 +64,6 @@ class _MainAppBarMerchantState extends State<MainAppBarMerchant>
     final size = MediaQuery.of(context).size;
 
     return Obx(() {
-      // Read observable HERE at the top — GetX tracks it correctly
       final isDark = widget.themeService.isDarkMode.value;
 
       return Container(
@@ -104,6 +108,18 @@ class _MainAppBarMerchantState extends State<MainAppBarMerchant>
                       // ── Menu button ──────────────────────
                       _MenuButton(isDark: isDark),
                       const Spacer(),
+                      // ── QR code ────────────────────────────
+                      _QrAppBarButton(
+  isDark: isDark,
+  onTap: widget.onQrTap,
+),
+                      const SizedBox(width: 8),
+                      // ── Notifications ─────────────────────
+                      NotificationButtonMerchant(
+                        isDark: isDark,
+                        onTap: widget.onNotificationTap,
+                      ),
+                      const SizedBox(width: 8),
                       // ── Theme toggle ─────────────────────
                       _AnimatedThemeButton(
                         isDark: isDark,
@@ -357,6 +373,71 @@ class _AnimatedThemeButtonState extends State<_AnimatedThemeButton>
               color: accent,
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+// ─────────────────────────────────────────────────────────────
+//  QR button — purple accent
+// ─────────────────────────────────────────────────────────────
+
+class _QrAppBarButton extends StatefulWidget {
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _QrAppBarButton({required this.isDark, required this.onTap});
+
+  @override
+  State<_QrAppBarButton> createState() => _QrAppBarButtonState();
+}
+
+class _QrAppBarButtonState extends State<_QrAppBarButton>
+    with SingleTickerProviderStateMixin {
+  static const Color _purple = Color(0xFF7C3AED);
+
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 110));
+    _scale = Tween<double>(begin: 1.0, end: 0.88)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _ctrl.forward(),
+      onTapUp: (_) async {
+        await _ctrl.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _ctrl.reverse(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 38,
+          width: 38,
+          decoration: BoxDecoration(
+            color: _purple.withOpacity(widget.isDark ? 0.16 : 0.09),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _purple.withOpacity(widget.isDark ? 0.32 : 0.22),
+              width: 0.5,
+            ),
+          ),
+          child: const Icon(Iconsax.scan_barcode, size: 19, color: _purple),
         ),
       ),
     );

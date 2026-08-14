@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -17,11 +18,21 @@ class MerchantMainDrawer extends StatelessWidget {
     required this.themeService,
   });
 
- bool get _isStarterPlan =>
+  bool get _isStarterPlan =>
       (MerchantController.to.merchant.value?.company?.stripePlan ?? '').toUpperCase() == 'STARTER';
 
   bool get _isBusinessPlan =>
       (MerchantController.to.merchant.value?.company?.stripePlan ?? '').toUpperCase() == 'BUSINESS';
+
+  ImageProvider? _decodeLogo(String? logo) {
+    if (logo == null || logo.isEmpty) return null;
+    try {
+      final base64Str = logo.contains(',') ? logo.split(',').last : logo;
+      return MemoryImage(base64Decode(base64Str));
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,119 +48,193 @@ class MerchantMainDrawer extends StatelessWidget {
             /// ───────────────── HEADER (PREMIUM) ─────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(size.width * 0.045),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF18181B) : Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.05),
+              child: Obx(() {
+                final merchant = MerchantController.to.merchant.value;
+                final company = merchant?.company;
+                final companyName = company?.name;
+                final fullName = merchant != null ? "${merchant.firstName} ${merchant.lastName}".trim() : "";
+
+                final displayName = (companyName != null && companyName.isNotEmpty)
+                    ? companyName
+                    : (fullName.isNotEmpty ? fullName : "My Business");
+
+                final displayEmail = merchant?.email ?? "merchant@email.com";
+                final logoImage = _decodeLogo(company?.logo);
+                final isActive = company?.isSubscriptionActive ?? false;
+
+                return Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(size.width * 0.045),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: isDark
+                          ? [const Color(0xFF1C1C22), const Color(0xFF17171B)]
+                          : [Colors.white, const Color(0xFFFCFBFF)],
+                    ),
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(
+                      color: primary.withOpacity(isDark ? .18 : .12),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primary.withOpacity(isDark ? .1 : .07),
+                        blurRadius: 26,
+                        offset: const Offset(0, 12),
+                      ),
+                      BoxShadow(
+                        color: Colors.black.withOpacity(isDark ? .3 : .04),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? .25 : .04),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      height: 52,
-                      width: 52,
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: primary.withOpacity(.10)),
-                      child: Icon(Iconsax.shop, color: primary, size: 24),
-                    ),
-                    SizedBox(width: size.width * 0.035),
-                    Expanded(
-                      child: Obx(() {
-                        final merchant = MerchantController.to.merchant.value;
-                        final companyName = merchant?.company?.name;
-                        final fullName = merchant != null ? "${merchant.firstName} ${merchant.lastName}".trim() : "";
+                  child: Row(
+                    children: [
+                      // ── AVATAR (logo or fallback icon) ──
+                      Container(
+                        height: 56,
+                        width: 56,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: logoImage == null
+                              ? LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [primary.withOpacity(.18), primary.withOpacity(.06)],
+                                )
+                              : null,
+                          border: Border.all(color: primary.withOpacity(.25), width: 1.6),
+                          image: logoImage != null
+                              ? DecorationImage(image: logoImage, fit: BoxFit.cover)
+                              : null,
+                        ),
+                        child: logoImage == null
+                            ? Icon(Iconsax.shop, color: primary, size: 24)
+                            : null,
+                      ),
 
-                        final displayName = (companyName != null && companyName.isNotEmpty)
-                            ? companyName
-                            : (fullName.isNotEmpty ? fullName : "My Business");
+                      SizedBox(width: size.width * 0.035),
 
-                        final displayEmail = merchant?.email ?? "merchant@email.com";
-
-                        return Column(
+                      // ── TEXT ──
+                      Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AppText(displayName, fontSize: 16, fontWeight: FontWeight.w700),
+                            AppText(
+                              displayName,
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w800,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             const SizedBox(height: 4),
-                            AppText(displayEmail, fontSize: 12.5, color: Colors.grey),
+                            AppText(
+                              displayEmail,
+                              fontSize: 12,
+                              overflow: TextOverflow.ellipsis,
+                              color: isDark ? Colors.white.withOpacity(.5) : Colors.black.withOpacity(.45),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: (isActive ? const Color(0xFF00C896) : Colors.grey).withOpacity(.12),
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: (isActive ? const Color(0xFF00C896) : Colors.grey).withOpacity(.25),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    height: 6,
+                                    width: 6,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isActive ? const Color(0xFF00C896) : Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  AppText(
+                                    isActive ? "active_label".tr : "inactive_label".tr,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: isActive ? const Color(0xFF00C896) : Colors.grey,
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
             ),
 
             const SizedBox(height: 14),
 
             /// ───────────────── MENU ─────────────────
             Expanded(
-  child: Obx(() {
-    final isFreePlan = MerchantController.to.isFreePlan;
-    final isStarter = _isStarterPlan;
-    final isBusiness = _isBusinessPlan;
+              child: Obx(() {
+                final isFreePlan = MerchantController.to.isFreePlan;
+                final isStarter = _isStarterPlan;
+                final isBusiness = _isBusinessPlan;
 
-    if (isFreePlan) {
-      return Padding(
-        padding: EdgeInsets.all(size.width * 0.01),
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          children: [
-            _sectionTitle(context, "account_merchant".tr),
-            _item(context, Iconsax.wallet_3, "billing_merchant".tr, 11),
+                if (isFreePlan) {
+                  return Padding(
+                    padding: EdgeInsets.all(size.width * 0.01),
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      children: [
+                        _sectionTitle(context, "account_merchant".tr),
+                        _item(context, Iconsax.wallet_3, "billing_merchant".tr, 11),
 
-            const SizedBox(height: 8),
-            const _NoPlanNotice(),
-          ],
-        ),
-      );
-    }
+                        const SizedBox(height: 8),
+                        const _NoPlanNotice(),
+                      ],
+                    ),
+                  );
+                }
 
-    return Padding(
-      padding: EdgeInsets.all(size.width * 0.01),
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        children: [
-          _item(context, Iconsax.home_2, "dashboard_merchant".tr, 0),
+                return Padding(
+                  padding: EdgeInsets.all(size.width * 0.01),
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    children: [
+                      _item(context, Iconsax.home_2, "dashboard_merchant".tr, 0),
 
-          _sectionTitle(context, "loyalty_program_merchant".tr),
-          _item(context, Iconsax.crown, "create_manage_loyalty_merchant".tr, 1),
-          _item(context, Iconsax.gift, "rewards_merchant".tr, 2),
-          _item(context, Iconsax.cup, "fortune_wheel_merchant".tr, 3, locked: isStarter),
+                      _sectionTitle(context, "loyalty_program_merchant".tr),
+                      _item(context, Iconsax.crown, "create_manage_loyalty_merchant".tr, 1),
+                      _item(context, Iconsax.gift, "rewards_merchant".tr, 2),
+                      _item(context, Iconsax.cup, "fortune_wheel_merchant".tr, 3, locked: isStarter),
 
-          _sectionTitle(context, "users_merchant".tr),
-          _item(context, Iconsax.people, "employees_merchant".tr, 4, locked: isStarter || isBusiness),
-          _item(context, Iconsax.profile_2user, "clients_merchant".tr, 5),
+                      _sectionTitle(context, "users_merchant".tr),
+                      _item(context, Iconsax.people, "employees_merchant".tr, 4, locked: isStarter || isBusiness),
+                      _item(context, Iconsax.profile_2user, "clients_merchant".tr, 5),
 
-          _sectionTitle(context, "marketing_merchant".tr),
-          _item(context, Iconsax.send_2, "campaigns_merchant".tr, 6, locked: isStarter),
-          _item(context, Iconsax.chart_2, "analytics_merchant".tr, 7),
-          _item(context, Iconsax.notification, "notifications".tr, 8, locked: isStarter),
-          _item(context, Iconsax.google_copy, "google_reviews_merchant".tr, 9),
+                      _sectionTitle(context, "marketing_merchant".tr),
+                      _item(context, Iconsax.send_2, "campaigns_merchant".tr, 6, locked: isStarter),
+                      _item(context, Iconsax.chart_2, "analytics_merchant".tr, 7),
+                      _item(context, Iconsax.notification, "notifications".tr, 8, locked: isStarter),
+                      _item(context, Iconsax.google_copy, "google_reviews_merchant".tr, 9),
 
-          _sectionTitle(context, "traceability_merchant".tr),
-          _item(context, Iconsax.activity, "activity_merchant".tr, 12, locked: isStarter || isBusiness),
-          _item(context, Iconsax.receipt_2_1, "redemptions_merchant".tr, 13, locked: isStarter || isBusiness),
-          _item(context, Iconsax.document_text_1, "audit_merchant".tr, 14, locked: isStarter || isBusiness),
+                      _sectionTitle(context, "traceability_merchant".tr),
+                      _item(context, Iconsax.activity, "activity_merchant".tr, 12, locked: isStarter || isBusiness),
+                      _item(context, Iconsax.receipt_2_1, "redemptions_merchant".tr, 13, locked: isStarter || isBusiness),
+                      _item(context, Iconsax.document_text_1, "audit_merchant".tr, 14, locked: isStarter || isBusiness),
 
-          _sectionTitle(context, "account_merchant".tr),
-          _item(context, Iconsax.setting_2, "settings_merchant".tr, 10),
-          _item(context, Iconsax.wallet_3, "billing_merchant".tr, 11),
-        ],
-      ),
-    );
-  }),
-),
+                      _sectionTitle(context, "account_merchant".tr),
+                      _item(context, Iconsax.setting_2, "settings_merchant".tr, 10),
+                      _item(context, Iconsax.wallet_3, "billing_merchant".tr, 11),
+                    ],
+                  ),
+                );
+              }),
+            ),
           ],
         ),
       ),
@@ -301,8 +386,8 @@ class MerchantMainDrawer extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                       onTap: () {
                         Navigator.pop(sheetContext);
-                        controller.selectIndex(11); // Billing
-                        Get.back(); // close drawer
+                        controller.selectIndex(11);
+                        Get.back();
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,

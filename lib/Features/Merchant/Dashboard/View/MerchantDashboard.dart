@@ -10,6 +10,7 @@ import 'package:vclub/Features/Merchant/Dashboard/View/Widgets/Actions.dart';
 import 'package:vclub/Features/Merchant/Dashboard/View/Widgets/MerchantStats.dart';
 import 'package:vclub/Features/Merchant/Dashboard/View/Widgets/RecentClientsCard.dart';
 import 'package:vclub/Features/Merchant/Dashboard/View/Widgets/RewardsCard.dart';
+import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsListController.dart';
 
 class MerchantDashboard extends StatefulWidget {
   const MerchantDashboard({super.key});
@@ -21,10 +22,12 @@ class MerchantDashboard extends StatefulWidget {
 class _MerchantDashboardState extends State<MerchantDashboard> {
   final merchant = MerchantController.to.merchant.value;
   final controller = MerchantDashboardController.to;
+  final notifController = Get.find<MerchantNotificationsListController>();
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.fetchDashboardData();
+      notifController.fetchNotifications();
     });
 
     super.initState();

@@ -2,31 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
+import 'package:vclub/Features/Merchant/Settings/Controllers/SettingsController.dart';
+import 'SectionUpdateButton.dart';
 
 class SocialMediaCard extends StatelessWidget {
-  const SocialMediaCard({
-    super.key,
-    required this.facebookController,
-    required this.instagramController,
-    required this.linkedinController,
-    required this.twitterController,
-    required this.youtubeController,
-    required this.tiktokController,
-  });
-
-  final TextEditingController facebookController;
-  final TextEditingController instagramController;
-  final TextEditingController linkedinController;
-  final TextEditingController twitterController;
-  final TextEditingController youtubeController;
-  final TextEditingController tiktokController;
+  const SocialMediaCard({super.key});
 
   static const _accent = Color(0xFF00B894);
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<SettingsController>();
     final size = MediaQuery.of(context).size;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Trigger the hint's Obx to react to typing, since text controllers
+    // aren't reactive on their own.
+    final socialFieldsValid = ValueNotifier(controller.hasAnySocialField);
+    for (final c in [
+      controller.facebookController,
+      controller.instagramController,
+      controller.linkedinController,
+      controller.twitterController,
+      controller.youtubeController,
+      controller.tiktokController,
+    ]) {
+      c.addListener(
+        () => socialFieldsValid.value = controller.hasAnySocialField,
+      );
+    }
 
     return Container(
       padding: EdgeInsets.all(size.width * .045),
@@ -49,7 +53,6 @@ class SocialMediaCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// ── HEADER ─────────────────────────────
           Row(
             children: [
               Container(
@@ -75,48 +78,81 @@ class SocialMediaCard extends StatelessWidget {
               ),
             ],
           ),
-
           SizedBox(height: size.height * .025),
 
           _SocialField(
             label: "facebook_url".tr,
             icon: Iconsax.facebook,
-            controller: facebookController,
+            controller: controller.facebookController,
           ),
           SizedBox(height: size.height * .015),
-
           _SocialField(
             label: "instagram_url".tr,
             icon: Iconsax.instagram,
-            controller: instagramController,
+            controller: controller.instagramController,
           ),
           SizedBox(height: size.height * .015),
-
           _SocialField(
             label: "linkedin_url".tr,
             icon: Iconsax.link,
-            controller: linkedinController,
+            controller: controller.linkedinController,
           ),
           SizedBox(height: size.height * .015),
-
           _SocialField(
             label: "twitter_url".tr,
             icon: Iconsax.global,
-            controller: twitterController,
+            controller: controller.twitterController,
           ),
           SizedBox(height: size.height * .015),
-
           _SocialField(
             label: "youtube_url".tr,
             icon: Iconsax.youtube,
-            controller: youtubeController,
+            controller: controller.youtubeController,
           ),
           SizedBox(height: size.height * .015),
-
           _SocialField(
             label: "tiktok_url".tr,
             icon: Icons.tiktok,
-            controller: tiktokController,
+            controller: controller.tiktokController,
+          ),
+
+          SizedBox(height: size.height * .022),
+          SizedBox(height: size.height * .022),
+          ValueListenableBuilder<bool>(
+            valueListenable: socialFieldsValid,
+            builder: (context, isValid, _) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Obx(
+                    () => SectionUpdateButton(
+                      loading: controller.savingSocial.value,
+                      onTap: controller.saveSocialMedia,
+                    ),
+                  ),
+                  if (!isValid) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(
+                          Iconsax.info_circle,
+                          size: 13,
+                          color: Colors.orangeAccent,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: AppText(
+                            "social_media_hint".tr,
+                            fontSize: 11,
+                            color: Colors.orangeAccent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -149,9 +185,7 @@ class _SocialField extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: Colors.grey,
         ),
-
-        SizedBox(height: 6),
-
+        const SizedBox(height: 6),
         Container(
           height: size.height * .06,
           padding: EdgeInsets.symmetric(horizontal: size.width * .03),
@@ -170,7 +204,6 @@ class _SocialField extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: const Color(0xFF00B894)),
               SizedBox(width: size.width * .03),
-
               Expanded(
                 child: TextField(
                   controller: controller,

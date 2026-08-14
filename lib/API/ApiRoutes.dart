@@ -9,7 +9,8 @@ static const String upload_logo = "/upload/logo";
   //Sign in
   static const String Login = '/auth/login';
   // refresh token
-  static const String refreshToken = '/auth/refresh';
+  static const String refreshToken = '/auth/refresh'; 
+  static const String change_password = '/auth/change-password' ;
   //merchant confirm payement  
    static const String confirm_payment = '/stripe/confirm-payment';
   // client
@@ -68,6 +69,11 @@ static const String merchant_portal = "/stripe/portal";
 static const String merchant_resubscribe = "/stripe/resubscribe"; 
 static const String merchant_loyalty_program = "/loyalty/program";
 static const String merchant_rewards_list= "/rewards"; 
-static const String merchant_my_company= "/companies/my-company";
+static const String merchant_my_company= "/companies/my-company";  
+static const String merchant_sessions= "/auth/sessions";
+static const String merchant_notifications = '/merchant/notifications/mine';
+static String merchantReadNotif(String notifId) =>
+    '/merchant/notifications/$notifId/read';
+static const String merchant_notifications_readall = '/merchant/notifications/read-all';
 
 }
