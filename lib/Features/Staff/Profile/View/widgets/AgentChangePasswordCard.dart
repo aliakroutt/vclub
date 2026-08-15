@@ -3,14 +3,14 @@ import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
-import 'package:vclub/Features/Merchant/Settings/Controllers/SettingsController.dart';
-import 'PasswordRequirementsList.dart';
-import 'PasswordStrengthBar.dart';
+import 'package:vclub/Features/Merchant/Settings/View/Widgets/PasswordRequirementsList.dart';
+import 'package:vclub/Features/Merchant/Settings/View/Widgets/PasswordStrengthBar.dart';
+import 'package:vclub/Features/Staff/Profile/Controllers/AgentPasswordController.dart';
 
-class ChangePasswordCard extends StatelessWidget {
-  ChangePasswordCard({super.key});
+class AgentChangePasswordCard extends StatelessWidget {
+  AgentChangePasswordCard({super.key});
 
-  final controller = Get.find<SettingsController>();
+  final controller = Get.put(AgentPasswordController());
   static const _accent = Color(0xFFE24B4A);
 
   @override

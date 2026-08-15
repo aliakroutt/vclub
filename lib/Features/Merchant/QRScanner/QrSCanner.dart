@@ -329,7 +329,7 @@ void _resumeScanning() {
                           ),
                         ),
                         child: AppText(
-                          widget.isRedeem ? "scan_qr_redeem" : "scan_qr",
+                          widget.isRedeem ? "scan_qr" : "scan_qr",
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,

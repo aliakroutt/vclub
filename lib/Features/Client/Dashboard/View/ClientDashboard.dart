@@ -110,7 +110,7 @@ void initState() {
                       controller.selectIndex(5);
                       },
                       onGoogleReviewTap: () {
-                      AppNavigator.to(ClubScreen(clubSlug: 'techazum', role: ClubViewerRole.client));
+                      AppNavigator.to(ClubScreen(clubSlug: 'techazum', role: ClubViewerRole.staff));
                       },
                     )),
                   

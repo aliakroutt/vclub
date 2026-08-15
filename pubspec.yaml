@@ -61,6 +61,7 @@ dependencies:
   share_plus: ^10.0.0
   flutter_image_compress: ^2.3.0
   screenshot: ^3.0.0
+  app_links: ^6.3.2
   intl: 
 
   flutter_localizations:

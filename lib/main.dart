@@ -7,12 +7,13 @@ import 'package:vclub/Configs/Theme/app_theme.dart';
 import 'package:vclub/Configs/Theme/theme_service.dart';
 import 'package:vclub/Configs/Translations/app_translations.dart';
 import 'package:vclub/Configs/Translations/language_service.dart';
+import 'package:vclub/Core/Storage/Controllers/AgentController.dart';
 import 'package:vclub/Core/Storage/Controllers/ClientController.dart';
 import 'package:vclub/Core/Storage/Controllers/MerchantController.dart';
 import 'package:vclub/Core/Storage/TokenStorage.dart';
 import 'package:vclub/Features/Auth/Controllers/ForgetPasswordController.dart';
 import 'package:vclub/Features/Auth/Controllers/SignUp_Controller.dart';
-import 'package:vclub/Features/Auth/Views/Login.dart';
+import 'package:vclub/Features/Auth/Views/AuthGate.dart';
 import 'package:vclub/Features/Client/Dashboard/Controllers/ClientDashboardController.dart';
 import 'package:vclub/Features/Client/Notifications/Controllers/ClientNotificationsController.dart';
 import 'package:vclub/Features/Client/Rewards/Controllers/RewardsClientController.dart';
@@ -21,7 +22,7 @@ import 'package:vclub/Features/Merchant/ManageLoyalty/Controllers/MerchantProgra
 import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/ComposeNotificationController.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsController.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsListController.dart';
-
+import 'package:vclub/Core/DeepLink/DeepLinkService.dart';
 Future<void> main() async {
   
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,9 @@ Future<void> main() async {
   print('5. ThemeMode obtained: $themeMode');
   runApp(MyApp(locale: locale, themeMode: themeMode));
   print('6. runApp called');
+   WidgetsBinding.instance.addPostFrameCallback((_) {
+    DeepLinkService.instance.init();
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -76,6 +80,7 @@ class MyApp extends StatelessWidget {
         Get.put(MerchantNotificationsController(), permanent: true);
         Get.put(ComposeNotificationController(), permanent: true);
         Get.put(MerchantNotificationsListController(), permanent: true);
+        Get.put(AgentController(), permanent: true);
       }),
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
@@ -99,7 +104,7 @@ class MyApp extends StatelessWidget {
           child: child!,
         );
       },
-      home: Login(),
+      home: const AuthGate(),
     );
   }
 }

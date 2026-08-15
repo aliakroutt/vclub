@@ -4,16 +4,19 @@ import 'package:get/get.dart';
 import 'package:vclub/API/auth_api_client.dart';
 import 'package:vclub/Core/Navigation/app_navigator.dart';
 import 'package:vclub/Core/Snackbars.dart';
+import 'package:vclub/Core/Storage/Controllers/AgentController.dart';
 import 'package:vclub/Core/Storage/Controllers/ClientController.dart';
 import 'package:vclub/Core/Storage/Controllers/MerchantController.dart';
 import 'package:vclub/Core/Storage/Eneums.dart';
 import 'package:vclub/Core/Storage/TokenStorage.dart';
 import 'package:vclub/Core/Widgets/AppLoader.dart';
+import 'package:vclub/Features/Auth/Services/AgentService.dart';
 import 'package:vclub/Features/Auth/Services/ClientService.dart';
 import 'package:vclub/Features/Auth/Services/MerchantService.dart';
 import 'package:vclub/Features/Client/Main/Views/MainScreen.dart';
 import 'package:vclub/Features/Merchant/Main/Controllers/MerchantMainController.dart';
 import 'package:vclub/Features/Merchant/Main/View/MerchantMain.dart';
+import 'package:vclub/Features/Staff/Main/View/MainScreenStaff.dart';
 
 class LoginController extends GetxController {
   // Controllers
@@ -34,19 +37,16 @@ class LoginController extends GetxController {
   bool validateLogin() {
     List<String> errors = [];
 
-    // 1️⃣ Email
     if (emailController.text.trim().isEmpty) {
       errors.add("email_required".tr);
     } else if (!GetUtils.isEmail(emailController.text.trim())) {
       errors.add("invalid_email".tr);
     }
 
-    // 2️⃣ Password
     if (passwordController.text.trim().isEmpty) {
       errors.add("password_required".tr);
     }
 
-    // ❌ Errors
     if (errors.isNotEmpty) {
       AppSnackBar.multipleErrors(errors);
       return false;
@@ -91,7 +91,6 @@ class LoginController extends GetxController {
           refreshToken: refreshToken,
         );
 
-        // Your login response only ever contains "client" today, no "user"/"role" key.
         final clientJson = data["client"] as Map<String, dynamic>?;
         final userJson = data["user"] as Map<String, dynamic>?;
 
@@ -115,7 +114,24 @@ class LoginController extends GetxController {
             return;
           }
           await ClientController.to.saveClient(profile);
+        } else if (role == UserRole.agent) {
+          // ── STAFF / AGENT ──
+          final userId = userJson?["id"]?.toString();
+          final companyId = userJson?["companyId"]?.toString();
+          if (userId != null) await TokenStorage.saveUserId(userId);
+          await TokenStorage.saveCompanyId(companyId);
+
+          final profile = await AgentService.profile();
+
+          AppLoader.hide();
+
+          if (profile == null) {
+            AppSnackBar.error("Failed to load profile");
+            return;
+          }
+          await AgentController.to.saveAgent(profile);
         } else {
+          // ── ADMIN / MERCHANT ──
           final userId = userJson?["id"]?.toString();
           final companyId = userJson?["companyId"]?.toString();
           if (userId != null) await TokenStorage.saveUserId(userId);
@@ -140,8 +156,10 @@ class LoginController extends GetxController {
 
         switch (TokenStorage.userRole) {
           case UserRole.admin:
-          case UserRole.agent:
             AppNavigator.to(MainScreenMerchant());
+            break;
+          case UserRole.agent:
+            AppNavigator.to(const MainScreenStaff());
             break;
           case UserRole.client:
             AppNavigator.to(MainScreen());
@@ -151,8 +169,6 @@ class LoginController extends GetxController {
           default:
             break;
         }
-
-        // AppSnackBar.success("Login successful");
       } else {
         AppLoader.hide();
         final message = data["message"]?.toString() ?? "Login failed";
