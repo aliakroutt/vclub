@@ -1564,5 +1564,20 @@ const Map<String, String> arAR = {
   "agent_last_name_label": "اسم العائلة",
   "agent_name_required": "يرجى ملء الاسم الأول واسم العائلة.",
   "agent_name_updated": "تم تحديث الاسم بنجاح.",
-  "agent_name_update_failed": "فشل تحديث الاسم. يرجى المحاولة مرة أخرى."
+  "agent_name_update_failed": "فشل تحديث الاسم. يرجى المحاولة مرة أخرى.",
+  "fortune_wheel_subtitle": "أدر العجلة واربح مكافآت من نواديك المفضلة.",
+  "total_wins_label": "إجمالي المكاسب",
+  "companies_joined_label": "النوادي المنضمة",
+  "no_spins_left": "لا توجد محاولات متبقية اليوم",
+  "wheel_unavailable": "العجلة غير متاحة لهذا النادي",
+  "wheel_history_title": "سجل الدورات",
+  "no_wheel_history": "لا توجد دورات بعد",
+  "wheel_win_title": "لقد ربحت!",
+  "wheel_no_win_title": "حظ أوفر في المرة القادمة",
+  "no_companies_joined": "لم تنضم إلى أي نادٍ بعد",
+  "no_companies_joined_subtitle": "انضم إلى برنامج ولاء لفتح العجلة.",
+  "failed_load_data": "فشل تحميل البيانات",
+  "history_button": "السجل",
+   "wheel_available": "متاحة",
+  "wheel_not_available": "غير متاحة"
 };

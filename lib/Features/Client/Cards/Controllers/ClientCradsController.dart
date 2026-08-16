@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:vclub/Core/Snackbars.dart';
 import 'package:vclub/Features/Client/Dashboard/Models/ClientCardsModel.dart';
 import 'package:vclub/Features/Client/Dashboard/Services/ApiCardsDashboardSevice.dart';
 
@@ -78,7 +77,7 @@ class ClientCardsController extends GetxController {
       applyFilters();
     } catch (e) {
       cardsError.value = "failed_load_cards".tr;
-      AppSnackBar.error("failed_load_cards".tr);
+      // AppSnackBar.error("failed_load_cards".tr);
     } finally {
       if (!initialLoaded.value) cardsLoading.value = false;
     }

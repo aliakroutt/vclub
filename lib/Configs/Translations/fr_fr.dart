@@ -1501,6 +1501,21 @@ const Map<String, String> frFR = {
   "agent_name_required": "Veuillez renseigner le prénom et le nom.",
   "agent_name_updated": "Nom mis à jour avec succès.",
   "agent_name_update_failed": "Échec de la mise à jour du nom. Veuillez réessayer.",
+   "fortune_wheel_subtitle": "Faites tourner la roue et gagnez des récompenses de vos clubs préférés.",
+  "total_wins_label": "Total des gains",
+  "companies_joined_label": "Clubs rejoints",
+  "no_spins_left": "Plus de tours aujourd'hui",
+  "wheel_unavailable": "Roue non disponible pour ce club",
+  "wheel_history_title": "Historique des tours",
+  "no_wheel_history": "Aucun tour effectué",
+  "wheel_win_title": "Vous avez gagné !",
+  "wheel_no_win_title": "Pas de chance cette fois",
+  "no_companies_joined": "Aucun club rejoint",
+  "no_companies_joined_subtitle": "Rejoignez un programme de fidélité pour débloquer la roue.",
+  "failed_load_data": "Échec du chargement des données",
+  "history_button": "Historique",
+   "wheel_available": "Disponible",
+  "wheel_not_available": "Non disponible",
   
  
 

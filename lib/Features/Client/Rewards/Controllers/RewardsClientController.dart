@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:vclub/Core/Snackbars.dart';
 import 'package:vclub/Features/Client/Rewards/Models/ClientReviewRewardModel.dart';
 import 'package:vclub/Features/Client/Rewards/Services/RewardsClientService.dart';
 
@@ -36,7 +35,7 @@ class GoogleReviewController extends GetxController {
       initialLoaded.value = true;
     } catch (e) {
       reviewError.value = "failed_load_google_review".tr;
-      AppSnackBar.error("failed_load_google_review".tr);
+      // AppSnackBar.error("failed_load_google_review".tr);
     } finally {
       reviewLoading.value = false;
     }

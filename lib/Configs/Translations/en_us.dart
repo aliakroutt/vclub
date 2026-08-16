@@ -1505,6 +1505,21 @@ const Map<String, String> enUS = {
   "agent_name_required": "Please fill in both first and last name.",
   "agent_name_updated": "Name updated successfully.",
   "agent_name_update_failed": "Failed to update name. Please try again.",
+  "fortune_wheel_subtitle": "Spin the wheel and win rewards from your favorite clubs.",
+  "total_wins_label": "Total wins",
+  "companies_joined_label": "Clubs joined",
+  "no_spins_left": "No spins left today",
+  "wheel_unavailable": "Wheel not available for this club",
+  "wheel_history_title": "Spin history",
+  "no_wheel_history": "No spins yet",
+  "wheel_win_title": "You won!",
+  "wheel_no_win_title": "Better luck next time",
+  "no_companies_joined": "No clubs joined yet",
+  "no_companies_joined_subtitle": "Join a loyalty program to unlock the wheel.",
+  "failed_load_data": "Failed to load data",
+  "history_button": "History",
+   "wheel_available": "Available",
+  "wheel_not_available": "Not available",
   
   
   

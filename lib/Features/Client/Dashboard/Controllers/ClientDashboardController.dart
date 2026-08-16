@@ -81,7 +81,7 @@ class ClientDashboardController extends GetxController {
           : ClientStatsModel.fromJson(result as Map<String, dynamic>);
     } catch (e) {
       statsError.value = "failed_load_stats".tr;
-      AppSnackBar.error("failed_load_stats".tr);
+      // AppSnackBar.error("failed_load_stats".tr);
     } finally {
       if (!initialLoaded.value) statsLoading.value = false;
     }
@@ -111,7 +111,7 @@ class ClientDashboardController extends GetxController {
       cards.assignAll(result);
     } catch (e) {
       cardsError.value = "failed_load_cards".tr;
-      AppSnackBar.error("failed_load_cards".tr);
+      // AppSnackBar.error("failed_load_cards".tr);
     } finally {
       if (!initialLoaded.value) cardsLoading.value = false;
     }
@@ -126,7 +126,7 @@ class ClientDashboardController extends GetxController {
       rewards.assignAll(result);
     } catch (e) {
       rewardsError.value = "failed_load_rewards";
-      AppSnackBar.error("failed_load_rewards".tr);
+      // AppSnackBar.error("failed_load_rewards".tr);
     } finally {
       if (!initialLoaded.value) rewardsLoading.value = false;
     }
@@ -142,7 +142,7 @@ class ClientDashboardController extends GetxController {
       history.assignAll(result);
     } catch (e) {
       historyError.value = "failed_load_history".tr;
-      AppSnackBar.error("failed_load_history".tr);
+      // AppSnackBar.error("failed_load_history".tr);
     } finally {
       if (!initialLoaded.value) historyLoading.value = false;
     }
@@ -157,7 +157,7 @@ class ClientDashboardController extends GetxController {
       wheel_history.assignAll(result);
     } catch (e) {
       wheelhistoryError.value = "failed_load_history";
-      AppSnackBar.error("failed_load_history".tr);
+      // AppSnackBar.error("failed_load_history".tr);
     } finally {
       if (!initialLoaded.value) wheelhistoryLoading.value = false;
     }

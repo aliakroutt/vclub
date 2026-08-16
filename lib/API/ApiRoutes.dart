@@ -33,7 +33,10 @@ static const String upload_logo = "/upload/logo";
   static String joinProgram(String clubSlug, String programSlug) =>
       '/clubs/$clubSlug/programs/$programSlug/join';
   static String GetPrograms(String clubSlug) => '/clubs/$clubSlug'; 
-  static const String client_clubs = '/memberships/mine';
+  static const String client_clubs = '/memberships/mine'; 
+static String getWheel(String companyId) => '/wheel/$companyId';
+static String spinwheel(String companyId) => '/wheel/$companyId/spin';
+   
 
   // merchane
   static const String merchant_me = '/users/me';

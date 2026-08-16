@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:vclub/Core/Snackbars.dart';
 import 'package:vclub/Features/Client/Notifications/Models/ClientNotificationsModel.dart';
 import 'package:vclub/Features/Client/Notifications/Services/NotificationsApiClient.dart';
 
@@ -58,7 +57,7 @@ class NotificationsController extends GetxController {
       initialLoaded.value = true;
     } catch (e) {
       notificationsError.value = "failed_load_notifications".tr;
-      AppSnackBar.error("failed_load_notifications".tr);
+      // AppSnackBar.error("failed_load_notifications".tr);
     } finally {
       notificationsLoading.value = false;
     }
@@ -81,7 +80,7 @@ class NotificationsController extends GetxController {
       currentPage.value = result.page;
       totalPages.value = result.totalPages;
     } catch (e) {
-      AppSnackBar.error("failed_load_notifications".tr);
+      // AppSnackBar.error("failed_load_notifications".tr);
     } finally {
       loadingMore.value = false;
     }
