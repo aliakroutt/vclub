@@ -3,6 +3,8 @@ import 'package:vclub/Features/Client/FortuneWheel/Models/FortuneWheelModels.dar
 import 'package:vclub/Features/Client/FortuneWheel/Services/FortuneWheelApiClient.dart';
 
 class FortuneWheelController extends GetxController {
+  static FortuneWheelController get to => Get.find();
+
   final RxList<ClientCompanyModel> companies = <ClientCompanyModel>[].obs;
   final Rx<ClientCompanyModel?> selectedCompany = Rx<ClientCompanyModel?>(null);
   final Rx<WheelModel?> wheel = Rx<WheelModel?>(null);
@@ -98,4 +100,23 @@ class FortuneWheelController extends GetxController {
   }
 
   Future<void> refresh() => fetchAll();
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears companies, wheel, history, and selection state back to initial
+  /// values. Call this on logout so the next fetch starts clean and
+  /// doesn't briefly flash a previous client's wheel data.
+  void resetControllerData() {
+    companies.clear();
+    selectedCompany.value = null;
+    wheel.value = null;
+    history.clear();
+
+    loadingCompanies.value = false;
+    loadingWheel.value = false;
+    spinning.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+  }
 }

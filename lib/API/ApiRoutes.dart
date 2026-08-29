@@ -3,11 +3,14 @@ class ApiRoutes {
 static const String upload_logo = "/upload/logo";
   /// Base URL
   static const String baseUrl = 'https://api-staging.vclub.fr/api';
+  static const String socketHost = 'https://api-staging.vclub.fr';
 
   //Sign up merchant
   static const String register_merchant = '/auth/signup';
   //Sign in
   static const String Login = '/auth/login';
+  static const String google_login = '/auth/google';
+  static const String Logout = '/auth/logout';
   // refresh token
   static const String refreshToken = '/auth/refresh'; 
   static const String change_password = '/auth/change-password' ;
@@ -17,7 +20,8 @@ static const String upload_logo = "/upload/logo";
   static const String client_me = '/clients/me';
   static const String client_signup = '/clients/register';
   static const String verify_otp = '/clients/verify';
-  static const String resend_otp = '/clients/resend-verification';
+  static const String resend_otp = '/clients/resend-verification'; 
+  static const String google_wallet = '/wallet/google/card/'; 
   // client dashboard
   static const String client_stats = '/memberships/history/stats';
   static const String client_history = '/memberships/history';
@@ -36,6 +40,8 @@ static const String upload_logo = "/upload/logo";
   static const String client_clubs = '/memberships/mine'; 
 static String getWheel(String companyId) => '/wheel/$companyId';
 static String spinwheel(String companyId) => '/wheel/$companyId/spin';
+static String reviewStart(String companyId) => '/reviews/$companyId/start';
+static String reviewClaim(String companyId) => '/reviews/$companyId/claim';
    
 
   // merchane
@@ -78,5 +84,15 @@ static const String merchant_notifications = '/merchant/notifications/mine';
 static String merchantReadNotif(String notifId) =>
     '/merchant/notifications/$notifId/read';
 static const String merchant_notifications_readall = '/merchant/notifications/read-all';
+
+
+// notifications 
+static const String client_save_token = '/devices/register';
+static String client_delete_token(String token) =>
+    '/devices/$token';
+
+    static const String merchant_save_token = '/merchant/devices/register';
+static String merchant_delete_token(String token) =>
+    '/merchant/devices/$token';
 
 }

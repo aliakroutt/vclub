@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:vclub/API/MerchantApiClient.dart';
+import 'package:vclub/Core/Cloudinary/CloudinaryService.dart';
 import 'package:vclub/Core/Navigation/app_navigator.dart';
 import 'package:vclub/Core/Snackbars.dart';
 import 'package:vclub/Core/Widgets/AppLoader.dart';
@@ -142,8 +143,6 @@ class MerchantSignUpController extends GetxController {
   bool validateCompanyData() {
     List<String> errors = [];
 
-    // Trade name is optional -> no check
-
     if (companyNameController.text.trim().isEmpty) {
       errors.add("company_name_required".tr);
     }
@@ -184,8 +183,6 @@ class MerchantSignUpController extends GetxController {
       errors.add("country_required".tr);
     }
 
-    // Logo, social media, google review link: all optional -> no checks
-
     if (errors.isNotEmpty) {
       AppSnackBar.multipleErrors(errors);
       return false;
@@ -195,7 +192,7 @@ class MerchantSignUpController extends GetxController {
   }
 
   // =========================
-  // CLEANUP
+  // SIGN UP
   // =========================
   Future<void> merchantSignUp_api() async {
     if (!validateMerchantDetails() || !validateCompanyData()) return;
@@ -205,20 +202,17 @@ class MerchantSignUpController extends GetxController {
 
       // 1) Upload logo first, only if the user picked one
       String logoUrl = "";
-      // if (logoFile.value != null) {
-      //   final uploadResponse = await MerchantApiClient.uploadLogo(
-      //     file: logoFile.value!,
-      //   );
-      //   final uploadData = uploadResponse.data;
+      if (logoFile.value != null) {
+        final uploadedUrl = await CloudinaryService.uploadImage(logoFile.value!);
 
-      //   if (uploadData is Map<String, dynamic> && uploadData["url"] != null) {
-      //     logoUrl = uploadData["url"].toString();
-      //   } else {
-      //     AppLoader.hide();
-      //     AppSnackBar.error("Failed to upload logo");
-      //     return;
-      //   }
-      // }
+        if (uploadedUrl == null) {
+          AppLoader.hide();
+          AppSnackBar.error("logo_upload_failed".tr);
+          return;
+        }
+
+        logoUrl = uploadedUrl;
+      }
 
       // 2) Build payload
       final payload = {
@@ -264,8 +258,6 @@ class MerchantSignUpController extends GetxController {
         debugPrint("✅ MERCHANT SIGNUP SUCCESS");
 
         final checkoutUrl = data["checkoutUrl"] as String?;
-
-        
 
         if (checkoutUrl != null && checkoutUrl.isNotEmpty) {
           Get.to(Login());
@@ -327,42 +319,6 @@ class MerchantSignUpController extends GetxController {
     Get.to(Login());
     AppSnackBar.success("quote_request_success_title".tr);
   }
-  // try {
-  //   isSubmittingQuote.value = true;
-
-  //   final payload = {
-  //     "message": quoteMessageController.text.trim(),
-  //     "language": Get.locale?.languageCode ?? "fr",
-  //   };
-
-  //   final response = await MerchantApiClient.quoteRequest(payload: payload);
-  //   final data = response.data;
-
-  //   if (response.statusCode == 200 || response.statusCode == 201) {
-  //     isSubmittingQuote.value = false;
-  //     AppSnackBar.success("quote_request_sent".tr);
-  //     Get.back();
-  //   } else {
-  //     isSubmittingQuote.value = false;
-  //     final message = (data is Map<String, dynamic>)
-  //         ? data["message"]?.toString()
-  //         : null;
-  //     AppSnackBar.error(message ?? "quote_request_failed".tr);
-  //   }
-  // } on DioException catch (e) {
-  //   isSubmittingQuote.value = false;
-  //   final data = e.response?.data;
-  //   final message =
-  //       (data is Map<String, dynamic>) ? data["message"]?.toString() : null;
-  //   AppSnackBar.error(message ?? "Network error, please try again");
-  // } catch (e, st) {
-  //   isSubmittingQuote.value = false;
-  //   debugPrint("❌ QUOTE REQUEST ERROR: $e");
-  //   debugPrint("$st");
-  //   AppSnackBar.error("Unexpected error occurred");
-  // } finally {
-  //   quoteMessageController.dispose;
-  // }
 
   void reset() {
     firstNameController.clear();
@@ -390,10 +346,10 @@ class MerchantSignUpController extends GetxController {
     xController.clear();
     youtubeController.clear();
     tiktokController.clear();
-    phoneCountryCode.value = "" ;
-    phoneCountryIso.value = "" ;
+    phoneCountryCode.value = "";
+    phoneCountryIso.value = "";
     isphone_valid.value = false;
 
-    
+    logoFile.value = null;
   }
 }

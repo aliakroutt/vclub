@@ -8,7 +8,7 @@ import 'package:vclub/Core/Widgets/AppLoader.dart';
 import 'package:vclub/Features/Auth/Widgets/Client/VerifyCode.dart';
 
 class ClientSignUpController extends GetxController { 
- final firstNameController = TextEditingController();
+ final  firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();

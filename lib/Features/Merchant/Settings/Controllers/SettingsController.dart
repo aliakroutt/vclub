@@ -3,11 +3,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:vclub/Core/Cloudinary/CloudinaryService.dart';
 import 'package:vclub/Core/Snackbars.dart';
 import 'package:vclub/Core/Storage/Controllers/MerchantController.dart';
 import 'package:vclub/Features/Auth/Services/MerchantService.dart';
 import 'package:vclub/Features/Merchant/Settings/Services/SettingsApiClient.dart';
-import 'package:vclub/Features/Merchant/Settings/Utils/ImageBase64.dart';
 import 'package:vclub/Features/Merchant/Settings/Utils/PasswordStrength.dart';
 
 class SettingsController extends GetxController {
@@ -30,8 +30,9 @@ class SettingsController extends GetxController {
   // ── ONLINE PRESENCE ──
   final googleReviewController = TextEditingController();
   final Rx<File?> logoFile = Rx<File?>(null);
-  final RxString existingLogoBase64 = "".obs;
+  final RxString existingLogoUrl = "".obs;
   final RxBool savingOnlinePresence = false.obs;
+  final RxBool isUploadingLogo = false.obs;
 
   // ── BRANDING & REGIONAL (kept for future use — card is commented out) ──
   final brandColorController = TextEditingController();
@@ -85,7 +86,7 @@ class SettingsController extends GetxController {
     countryController.text = company.address?.country ?? "";
 
     googleReviewController.text = company.googleReviewLink ?? "";
-    existingLogoBase64.value = company.logo ?? "";
+    existingLogoUrl.value = company.logo ?? "";
 
     countryCodeController.text = company.countryCode ?? "";
     timezoneController.text = company.timezone ?? "";
@@ -211,7 +212,7 @@ Future<void> updatePassword() async {
       newPasswordController.clear();
       confirmPasswordController.clear();
       newPasswordValue.value = "";
-      AppSnackBar.success("password_updated".tr); // translated, not API message
+      AppSnackBar.success("password_updated".tr);
     } else {
       AppSnackBar.error(result.errorMessage ?? "change_password_failed_generic".tr);
     }
@@ -232,9 +233,17 @@ Future<void> updatePassword() async {
 
     final file = logoFile.value;
     if (file != null) {
-      final encoded = await ImageBase64.fromFile(file);
-      debugPrint("ℹ️ Logo base64 length: ${encoded.length} chars (~${(encoded.length / 1024).toStringAsFixed(1)} KB)");
-      payload["logo"] = encoded;
+      isUploadingLogo.value = true;
+      final logoUrl = await CloudinaryService.uploadImage(file);
+      isUploadingLogo.value = false;
+
+      if (logoUrl == null) {
+        AppSnackBar.error("logo_upload_failed".tr);
+        savingOnlinePresence.value = false;
+        return;
+      }
+
+      payload["logo"] = logoUrl;
     }
 
     await SettingsApiClient.updateCompany(payload);
@@ -258,6 +267,7 @@ Future<void> updatePassword() async {
     AppSnackBar.error(message);
   } finally {
     savingOnlinePresence.value = false;
+    isUploadingLogo.value = false;
   }
 }
 
@@ -329,8 +339,6 @@ Future<void> updatePassword() async {
   void toggleNew() => showNew.value = !showNew.value;
   void toggleConfirm() => showConfirm.value = !showConfirm.value;
 
-  
-
   Future<void> _refreshProfile() async {
     final profile = await MerchantService.profile();
     if (profile == null) return;
@@ -356,7 +364,7 @@ Future<void> updatePassword() async {
 
     googleReviewController.clear();
     logoFile.value = null;
-    existingLogoBase64.value = "";
+    existingLogoUrl.value = "";
 
     brandColorController.clear();
     secondaryColorController.clear();
@@ -382,6 +390,7 @@ Future<void> updatePassword() async {
     savingGeneralInfo.value = false;
     savingAddress.value = false;
     savingOnlinePresence.value = false;
+    isUploadingLogo.value = false;
     savingBranding.value = false;
     savingSocial.value = false;
     savingPassword.value = false;

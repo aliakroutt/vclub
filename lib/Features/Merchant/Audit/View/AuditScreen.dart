@@ -45,7 +45,9 @@ class AuditScreen extends StatelessWidget {
                   }
 
                   if (controller.hasError.value && controller.logs.isEmpty) {
-                    return AuditErrorState(onRetry: () => controller.fetchLogs(reset: true));
+                    return 
+                      Center(child: AuditErrorState(onRetry: () => controller.fetchLogs(reset: true))
+                    );
                   }
 
                   if (controller.logs.isEmpty) {

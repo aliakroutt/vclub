@@ -3,6 +3,8 @@ import 'package:vclub/Features/Merchant/Billing/Models/InvoiceModel.dart';
 import 'package:vclub/Features/Merchant/Billing/Services/MerchantBillingApiClient.dart';
 
 class InvoicesController extends GetxController {
+  static InvoicesController get to => Get.find();
+
   final RxList<InvoiceModel> invoices = <InvoiceModel>[].obs;
   final Rx<InvoicesSummaryModel?> summary = Rx<InvoicesSummaryModel?>(null);
   
@@ -64,4 +66,24 @@ class InvoicesController extends GetxController {
   }
 
   Future<void> refresh() => fetchInvoices(reset: true);
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears invoices, summary, and pagination state back to their initial
+  /// values. Call this on logout so the next fetch starts clean and
+  /// doesn't briefly flash a previous merchant's billing data.
+  void resetControllerData() {
+    _page = 1;
+    _totalPages = 1;
+
+    loading.value = false;
+    loadingMore.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+
+    total.value = 0;
+    invoices.clear();
+    summary.value = null;
+  }
 }

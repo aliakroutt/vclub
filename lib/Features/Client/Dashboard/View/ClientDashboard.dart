@@ -1,10 +1,9 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
-import 'package:vclub/Core/Navigation/app_navigator.dart';
 import 'package:vclub/Core/Storage/Controllers/ClientController.dart';
 import 'package:vclub/Core/Widgets/animated_entry.dart';
-import 'package:vclub/Features/Client/ClubsClient/View/Clubs.dart';
 import 'package:vclub/Features/Client/Dashboard/Controllers/ClientDashboardController.dart';
 import 'package:vclub/Features/Client/Dashboard/Controllers/TabController.dart';
 import 'package:vclub/Features/Client/Dashboard/View/Widgets/CardsSection.dart';
@@ -14,6 +13,7 @@ import 'package:vclub/Features/Client/Dashboard/View/Widgets/HistoryTab.dart';
 import 'package:vclub/Features/Client/Dashboard/View/Widgets/RewardsTab.dart';
 import 'package:vclub/Features/Client/Main/Controllers/MainController.dart';
 import 'package:vclub/Features/Client/Notifications/Controllers/ClientNotificationsController.dart';
+import 'package:vclub/Features/Client/Rewards/Controllers/RewardsClientController.dart';
 
 class ClientDashboard extends StatefulWidget {
   const ClientDashboard({super.key});
@@ -25,18 +25,20 @@ class ClientDashboard extends StatefulWidget {
 class _ClientDashboardState extends State<ClientDashboard> {
   final tabController = Get.put(ClientTabController());
   final controller = Get.put(MainController());
-   final dashcontroller = ClientDashboardController.to;
-   final profilecontroller = Get.find<ClientController>();
-   final NotificationsController notifcontroller =
+  final dashcontroller = ClientDashboardController.to;
+  final profilecontroller = Get.find<ClientController>();
+  final NotificationsController notifcontroller =
       Get.find<NotificationsController>();
- @override
-void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    dashcontroller.fetchDashboardData();
-    notifcontroller.fetchNotifications();
-  });
-}
+  final GoogleReviewController rewardcontroller =
+      Get.find<GoogleReviewController>();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      dashcontroller.fetchDashboardData();
+      notifcontroller.fetchNotifications();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,106 +47,116 @@ void initState() {
 
     return Scaffold(
       body: SafeArea(
-        child:  SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: size.height * 0.01),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: size.height * 0.01),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child:  Align(
-                      alignment: isRTL
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: FadeSlide(
-              delayMs: 200,
-              child : AppText(
-                        'dashboard_title_client'.trParams({'name': profilecontroller.client.value!.firstName}),
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                      )),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: isRTL
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: FadeSlide(
+                    delayMs: 200,
+                    child: AppText(
+                      'dashboard_title_client'.trParams({
+                        'name': profilecontroller.client.value!.firstName,
+                      }),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
                     ),
-                  
-                ),
-
-                SizedBox(height: size.height * 0.01),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child:  Align(
-                      alignment: isRTL
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: FadeSlide(
-              delayMs: 250,
-              child : AppText(
-                        'dashboard_subtitle_client'.tr,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.color?.withOpacity(0.7),
-                      )),
-                    
                   ),
                 ),
+              ),
 
-                SizedBox(height: size.height * 0.02),
+              SizedBox(height: size.height * 0.01),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: isRTL
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: FadeSlide(
-              delayMs: 300,
-              child :  ClientStatsRow(),
-                )),
-                SizedBox(height: size.height * 0.02),
-
-                Padding(
-                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: FadeSlide(
-              delayMs: 400,
-              child :  ClientActionsColumn(
-                      onFortuneWheelTap: () {
-                      controller.selectIndex(5);
-                      },
-                      onGoogleReviewTap: () {
-                      AppNavigator.to(ClubScreen(clubSlug: 'techazum', role: ClubViewerRole.staff));
-                      },
-                    )),
-                  
+                    delayMs: 250,
+                    child: AppText(
+                      'dashboard_subtitle_client'.tr,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.color?.withOpacity(0.7),
+                    ),
+                  ),
                 ),
-                SizedBox(height: size.height * 0.02),
-                Padding(
-                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: FadeSlide(
-              delayMs: 450,
-              child : MyCardsSection())),
-                SizedBox(height: size.height * 0.02),
-               Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const FadeSlide(
-              delayMs: 500,
-              child : RewardsTab())),
-                SizedBox(height: size.height * 0.02),
-               Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const FadeSlide(
-              delayMs: 550,
-              child : HistoryTab())),
-                SizedBox(height: size.height * 0.02),
-                SizedBox(height: size.height * 0.15),
-              ],
-            ),
-          
+              ),
+
+              SizedBox(height: size.height * 0.02),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: FadeSlide(delayMs: 300, child: ClientStatsRow()),
+              ),
+              SizedBox(height: size.height * 0.02),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: FadeSlide(
+                  delayMs: 400,
+                  child: ClientActionsColumn(
+                    onFortuneWheelTap: () {
+                      controller.selectIndex(5);
+                    },
+                    onGoogleReviewTap: () async {
+                      rewardcontroller.select(2);
+                      controller.selectIndex(2);
+
+                      await AwesomeNotifications().createNotification(
+                        content: NotificationContent(
+                          id: 999,
+                          channelKey: 'high_importance_channel',
+                          title: 'Manual Test',
+                          body: 'If you see this, Awesome Notifications works',
+                        ),
+                      );
+                      // AppNavigator.to(
+                      //   ClubScreen(
+                      //     clubSlug: 'techazum',
+                      //     role: ClubViewerRole.staff,
+                      //   ),
+                      // );
+                    },
+                  ),
+                ),
+              ),
+              SizedBox(height: size.height * 0.02),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: FadeSlide(delayMs: 450, child: MyCardsSection()),
+              ),
+              SizedBox(height: size.height * 0.02),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: const FadeSlide(delayMs: 500, child: RewardsTab()),
+              ),
+              SizedBox(height: size.height * 0.02),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: const FadeSlide(delayMs: 550, child: HistoryTab()),
+              ),
+              SizedBox(height: size.height * 0.02),
+              SizedBox(height: size.height * 0.15),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
-
 
 // Widget _buildTab(int index) {
 //   switch (index) {

@@ -5,6 +5,8 @@ import 'package:vclub/Features/Merchant/Clients/Services/MerchantClientsApiClien
 import 'package:vclub/Features/Merchant/Clients/View/Widgets/ClientsTabs.dart';
 
 class ClientsController extends GetxController {
+  static ClientsController get to => Get.find();
+
   final clients = <ClientModel>[].obs;
 
   final isLoading = false.obs;      // first load / reset (search, filter, refresh)
@@ -84,19 +86,43 @@ class ClientsController extends GetxController {
   }
 
   Future<void> refresh() => fetchClients(reset: true);
+
+  /// Clears filters/search and refetches — used for in-app "reset filters"
+  /// actions where the screen is still visible and should show fresh data.
   Future<void> resetData() async {
-  _debounce?.cancel();
+    _debounce?.cancel();
 
-  searchQuery.value = '';
-  selectedTab.value = ClientTab.all;
-  _page = 1;
-  _totalPages = 1;
-  totalClients.value = 0;
-  hasError.value = false;
-  clients.clear();
+    searchQuery.value = '';
+    selectedTab.value = ClientTab.all;
+    _page = 1;
+    _totalPages = 1;
+    totalClients.value = 0;
+    hasError.value = false;
+    clients.clear();
 
-  await fetchClients(reset: true);
-}
+    await fetchClients(reset: true);
+  }
+
+  // =========================
+  // RESET (LOGOUT)
+  // =========================
+  /// Clears all client list data, search/filter state, and pagination back
+  /// to initial values, WITHOUT refetching — used on logout, where the app
+  /// is navigating away and a network call would be wasted (or could race
+  /// with the logout navigation).
+  void resetControllerData() {
+    _debounce?.cancel();
+
+    searchQuery.value = '';
+    selectedTab.value = ClientTab.all;
+    _page = 1;
+    _totalPages = 1;
+    totalClients.value = 0;
+    isLoading.value = false;
+    isLoadingMore.value = false;
+    hasError.value = false;
+    clients.clear();
+  }
 
   @override
   void onClose() {

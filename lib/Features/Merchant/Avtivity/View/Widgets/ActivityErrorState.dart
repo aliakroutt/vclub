@@ -14,7 +14,7 @@ class ActivityErrorState extends StatelessWidget {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 140),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

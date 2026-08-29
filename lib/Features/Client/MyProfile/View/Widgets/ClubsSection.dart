@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -50,7 +52,11 @@ class ClubsSection extends StatelessWidget {
     return (total / programs.length).clamp(0.0, 1.0);
   }
 
-  void _openSheet(BuildContext context, CompanyModel company, List<ClientCardModel> programs) {
+  void _openSheet(
+    BuildContext context,
+    CompanyModel company,
+    List<ClientCardModel> programs,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -66,7 +72,8 @@ class ClubsSection extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     final grouped = _groupByCompany();
-    final entries = grouped.entries.toList()..sort((a, b) => b.value.length.compareTo(a.value.length));
+    final entries = grouped.entries.toList()
+      ..sort((a, b) => b.value.length.compareTo(a.value.length));
 
     const cols = 4;
     const spacing = 14.0;
@@ -77,23 +84,27 @@ class ClubsSection extends StatelessWidget {
       child: isLoading
           ? _CirclesShimmer(isDark: isDark, itemWidth: itemWidth)
           : entries.isEmpty
-              ? const _EmptyClubsState()
-              : Wrap(
-                  spacing: spacing,
-                  runSpacing: spacing + 6,
-                  children: [
-                    for (final entry in entries)
-                      SizedBox(
-                        width: itemWidth,
-                        child: _StoryAvatar(
-                          company: entry.value.first.company,
-                          progress: _companyProgress(entry.value),
-                          programCount: entry.value.length,
-                          onTap: () => _openSheet(context, entry.value.first.company, entry.value),
-                        ),
+          ? const _EmptyClubsState()
+          : Wrap(
+              spacing: spacing,
+              runSpacing: spacing + 6,
+              children: [
+                for (final entry in entries)
+                  SizedBox(
+                    width: itemWidth,
+                    child: _StoryAvatar(
+                      company: entry.value.first.company,
+                      progress: _companyProgress(entry.value),
+                      programCount: entry.value.length,
+                      onTap: () => _openSheet(
+                        context,
+                        entry.value.first.company,
+                        entry.value,
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+              ],
+            ),
     );
   }
 }
@@ -114,6 +125,15 @@ class _StoryAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    ImageProvider? decodeLogo(String? logo) {
+      if (logo == null || logo.isEmpty) return null;
+      try {
+        final b64 = logo.contains(',') ? logo.split(',').last : logo;
+        return MemoryImage(base64Decode(b64));
+      } catch (_) {
+        return null;
+      }
+    }
 
     return InkWell(
       onTap: onTap,
@@ -134,7 +154,11 @@ class _StoryAvatar extends StatelessWidget {
                     curve: Curves.easeOutCubic,
                     builder: (context, v, _) => CustomPaint(
                       size: const Size(66, 66),
-                      painter: _RingPainter(progress: v, color: AppColors.primary, isDark: isDark),
+                      painter: _RingPainter(
+                        progress: v,
+                        color: AppColors.primary,
+                        isDark: isDark,
+                      ),
                     ),
                   ),
                   Container(
@@ -146,18 +170,32 @@ class _StoryAvatar extends StatelessWidget {
                       color: Theme.of(context).scaffoldBackgroundColor,
                       boxShadow: isDark
                           ? []
-                          : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 3))],
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                     ),
                     child: ClipOval(
                       child: Container(
                         color: AppColors.primary.withOpacity(0.08),
-                        child: company.logo.isNotEmpty
-                            ? Image.network(
-                                company.logo,
+                        child: decodeLogo(company.logo) != null
+                            ? Image(
+                                image: decodeLogo(company.logo)!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Icon(Iconsax.shop, color: AppColors.primary, size: 18),
+                                errorBuilder: (_, __, ___) => Icon(
+                                  Iconsax.shop,
+                                  color: AppColors.primary,
+                                  size: 18,
+                                ),
                               )
-                            : Icon(Iconsax.shop, color: AppColors.primary, size: 18),
+                            : Icon(
+                                Iconsax.shop,
+                                color: AppColors.primary,
+                                size: 18,
+                              ),
                       ),
                     ),
                   ),
@@ -166,15 +204,25 @@ class _StoryAvatar extends StatelessWidget {
                       top: 0,
                       right: 0,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1.5,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+                          border: Border.all(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            width: 2,
+                          ),
                         ),
                         child: Text(
                           '$programCount',
-                          style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white),
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -200,14 +248,20 @@ class _RingPainter extends CustomPainter {
   final double progress;
   final Color color;
   final bool isDark;
-  const _RingPainter({required this.progress, required this.color, required this.isDark});
+  const _RingPainter({
+    required this.progress,
+    required this.color,
+    required this.isDark,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final radius = size.width / 2 - 2.5;
     final track = Paint()
-      ..color = isDark ? Colors.white.withOpacity(0.10) : color.withOpacity(0.14)
+      ..color = isDark
+          ? Colors.white.withOpacity(0.10)
+          : color.withOpacity(0.14)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.8
       ..strokeCap = StrokeCap.round;
@@ -218,7 +272,13 @@ class _RingPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.8
       ..strokeCap = StrokeCap.round;
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), -1.5708, progress * 6.28319, false, arc);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -1.5708,
+      progress * 6.28319,
+      false,
+      arc,
+    );
   }
 
   @override
@@ -237,18 +297,32 @@ class _EmptyClubsState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02),
-        border: Border.all(color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05)),
+        color: isDark
+            ? Colors.white.withOpacity(0.03)
+            : Colors.black.withOpacity(0.02),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.06)
+              : Colors.black.withOpacity(0.05),
+        ),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.10), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.10),
+              shape: BoxShape.circle,
+            ),
             child: Icon(Iconsax.cup, size: 24, color: AppColors.primary),
           ),
           const SizedBox(height: 12),
-          AppText("no_clubs_joined_yet".tr, fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
+          AppText(
+            "no_clubs_joined_yet".tr,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey,
+          ),
         ],
       ),
     );
@@ -262,7 +336,9 @@ class _CirclesShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05);
+    final color = isDark
+        ? Colors.white.withOpacity(0.06)
+        : Colors.black.withOpacity(0.05);
     return Wrap(
       spacing: 14,
       runSpacing: 20,
@@ -272,9 +348,20 @@ class _CirclesShimmer extends StatelessWidget {
           width: itemWidth,
           child: Column(
             children: [
-              Container(width: 66, height: 66, decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
+              Container(
+                width: 66,
+                height: 66,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+              ),
               const SizedBox(height: 8),
-              Container(width: itemWidth * 0.6, height: 9, decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: color)),
+              Container(
+                width: itemWidth * 0.6,
+                height: 9,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: color,
+                ),
+              ),
             ],
           ),
         ),

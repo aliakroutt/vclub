@@ -7,6 +7,8 @@ import 'package:vclub/Features/Merchant/NotificationsMerchant/Services/MerchantN
 
 
 class MerchantNotificationsListController extends GetxController {
+  static MerchantNotificationsListController get to => Get.find();
+
   final RxList<MerchantNotificationModel> notifications = <MerchantNotificationModel>[].obs;
 
   final RxBool notificationsLoading = false.obs;

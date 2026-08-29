@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vclub/Configs/Theme/theme_service.dart';
 import 'package:vclub/Core/BottomSheets.dart';
-import 'package:vclub/Core/Navigation/app_navigator.dart';
 import 'package:vclub/Core/Storage/Controllers/AgentController.dart';
-import 'package:vclub/Core/Storage/TokenStorage.dart';
-import 'package:vclub/Core/Storage/UserStorage.dart';
-import 'package:vclub/Features/Auth/Views/Login.dart';
+import 'package:vclub/Features/Auth/Services/LogoutService.dart';
 import 'package:vclub/Features/Merchant/QRScanner/QrSCanner.dart';
+import 'package:vclub/Features/Staff/Activity/Controllers/AgentActivityController.dart';
 import 'package:vclub/Features/Staff/Main/Controllers/StaffMainController.dart';
 import 'package:vclub/Features/Staff/Main/View/Widgets/AppBarStaff.dart';
 import 'package:vclub/Features/Staff/Main/View/Widgets/StaffNavBar.dart';
@@ -35,16 +33,18 @@ class _MainScreenStaffState extends State<MainScreenStaff> {
             controller.selectIndex(0);
           },
           onLogout: () {
-            showLogoutBottomSheet(
-              onConfirm: () async {
-                await TokenStorage.clear();
-                UserStorage.clear();
-                AgentController.to.clear();
-                AppNavigator.to(Login());
-                controller.selectIndex(0);
-              },
-            );
-          },
+  showLogoutBottomSheet(
+    onConfirm: () async {
+      await LogoutService.logout(
+        resetControllers: [
+          safeReset<AgentController>(() => AgentController.to.clear()),
+          safeReset<AgentActivityController>(() => AgentActivityController.to.resetControllerData()),
+        ],
+      );
+      controller.selectIndex(0);
+    },
+  );
+},
         ),
 
         body: Stack(

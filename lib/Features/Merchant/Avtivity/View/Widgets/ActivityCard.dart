@@ -39,20 +39,13 @@ class ActivityCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 11),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: isDark ? const Color(0xFF1C1F26) : Colors.white,
-          border: Border.all(
-            color: isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.045),
-          ),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 16,
-              spreadRadius: -10,
-              offset: const Offset(0, 8),
-              color: isDark ? Colors.black.withOpacity(.35) : Colors.black.withOpacity(.05),
-            ),
-          ],
-        ),
+        borderRadius: BorderRadius.circular(24),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.05)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(isDark ? .22 : .04), blurRadius: 16, offset: const Offset(0, 4)),
+        ],
+      ),
         child: Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(18),

@@ -8,6 +8,8 @@ import 'package:vclub/Features/Merchant/Billing/Models/SmsAddonModel.dart';
 import 'package:vclub/Features/Merchant/Billing/Services/MerchantBillingApiClient.dart';
 
 class SmsAddonController extends GetxController {
+  static SmsAddonController get to => Get.find();
+
   final RxBool enabled = false.obs;
   final Rx<SmsAddonInfoModel?> info = Rx<SmsAddonInfoModel?>(null);
 
@@ -133,6 +135,28 @@ Future<String?> fetchBillingPortalUrl() async {
     isOpeningPortal.value = false;
   }
 }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears SMS-addon and subscription-action state back to initial values.
+  /// Call this on logout. Note: the `ever()` worker on MerchantController's
+  /// merchant profile is left running — it's a general sync mechanism tied
+  /// to this controller's lifecycle, not per-session data, and will simply
+  /// re-sync `enabled` correctly once the next merchant logs in and their
+  /// profile loads.
+  void resetControllerData() {
+    enabled.value = false;
+    info.value = null;
+
+    loadingInfo.value = false;
+    toggling.value = false;
+    hasError.value = false;
+
+    isReactivating.value = false;
+    isCanceling.value = false;
+    isOpeningPortal.value = false;
+  }
 
   @override
   void onClose() {

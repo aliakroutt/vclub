@@ -7,7 +7,7 @@ class ClientCardModel {
 
   final int points;
   final int stamps;
-  final int cashbackBalance;
+  final num cashbackBalance;
   final String tier;
   final int visits;
   final DateTime? lastActivityAt;
@@ -40,6 +40,32 @@ class ClientCardModel {
           ? DateTime.tryParse(json["lastActivityAt"])
           : null,
       cardCompleted: json["cardCompleted"] ?? false,
+    );
+  }
+
+  /// Returns a copy with the given fields overridden — used to apply a
+  /// realtime socket update (points/stamps/cashback/cardCompleted) onto
+  /// an existing card without refetching it from the API.
+  ClientCardModel copyWith({
+    int? points,
+    int? stamps,
+    num? cashbackBalance,
+    bool? cardCompleted,
+    int? visits,
+    String? tier,
+    DateTime? lastActivityAt,
+  }) {
+    return ClientCardModel(
+      id: id,
+      company: company,
+      program: program,
+      points: points ?? this.points,
+      stamps: stamps ?? this.stamps,
+      cashbackBalance: cashbackBalance ?? this.cashbackBalance,
+      tier: tier ?? this.tier,
+      visits: visits ?? this.visits,
+      lastActivityAt: lastActivityAt ?? this.lastActivityAt,
+      cardCompleted: cardCompleted ?? this.cardCompleted,
     );
   }
 }

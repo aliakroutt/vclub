@@ -4,7 +4,7 @@ class ClientStatsModel {
   final int bonusReceived;
   final int stampsEarned;
   final int stampsRewardsClaimed;
-  final int cashbackEarned;
+  final num cashbackEarned;
   final int totalTransactions;
 
   ClientStatsModel({

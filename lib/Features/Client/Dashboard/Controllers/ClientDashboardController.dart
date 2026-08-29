@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get.dart';
 import 'package:vclub/Core/Snackbars.dart';
 import 'package:vclub/Features/Client/Dashboard/Models/ClientCardTokenModel.dart';
@@ -79,8 +80,11 @@ class ClientDashboardController extends GetxController {
       stats.value = result is ClientStatsModel
           ? result
           : ClientStatsModel.fromJson(result as Map<String, dynamic>);
+        final token =  await FirebaseMessaging.instance.getToken();
+print('🔑 FCM TOKEN: $token');
     } catch (e) {
       statsError.value = "failed_load_stats".tr;
+      print(e) ;
       // AppSnackBar.error("failed_load_stats".tr);
     } finally {
       if (!initialLoaded.value) statsLoading.value = false;
@@ -111,6 +115,7 @@ class ClientDashboardController extends GetxController {
       cards.assignAll(result);
     } catch (e) {
       cardsError.value = "failed_load_cards".tr;
+      print(e) ;
       // AppSnackBar.error("failed_load_cards".tr);
     } finally {
       if (!initialLoaded.value) cardsLoading.value = false;
@@ -142,6 +147,7 @@ class ClientDashboardController extends GetxController {
       history.assignAll(result);
     } catch (e) {
       historyError.value = "failed_load_history".tr;
+      print(e) ;
       // AppSnackBar.error("failed_load_history".tr);
     } finally {
       if (!initialLoaded.value) historyLoading.value = false;

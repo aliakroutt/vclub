@@ -6,6 +6,8 @@ import 'package:vclub/Features/Merchant/Billing/Models/PlanModel.dart';
 import 'package:vclub/Features/Merchant/Billing/Services/MerchantBillingApiClient.dart';
 
 class PlansController extends GetxController {
+  static PlansController get to => Get.find();
+
   final RxList<PlanDisplayModel> plans = <PlanDisplayModel>[].obs;
 
   final RxBool loading = false.obs;
@@ -65,5 +67,20 @@ class PlansController extends GetxController {
     } finally {
       isChangingPlan.value = false;
     }
+  }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears plans data back to its initial state. Call this on logout so
+  /// the next fetch starts clean and doesn't briefly flash stale plan data
+  /// (pricing shouldn't differ per merchant, but state flags still should
+  /// reset so loading/error UI behaves correctly for the next session).
+  void resetControllerData() {
+    loading.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+    isChangingPlan.value = false;
+    plans.clear();
   }
 }

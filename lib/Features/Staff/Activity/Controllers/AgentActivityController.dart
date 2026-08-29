@@ -3,6 +3,8 @@ import 'package:vclub/Features/Merchant/Avtivity/Models/MerchantActivityModel.da
 import 'package:vclub/Features/Merchant/Avtivity/Services/MerchantActivityApiClient.dart';
 
 class AgentActivityController extends GetxController {
+  static AgentActivityController get to => Get.find();
+
   final RxList<MerchantActivityItem> activities = <MerchantActivityItem>[].obs;
 
   final RxBool loading = false.obs;
@@ -100,5 +102,28 @@ class AgentActivityController extends GetxController {
     fromDate.value = null;
     toDate.value = null;
     fetchActivities(reset: true);
+  }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears activities, filters, and pagination state back to initial
+  /// values. Call this on logout so the next fetch starts clean and
+  /// doesn't briefly flash a previous agent's activity feed.
+  void resetControllerData() {
+    _page = 1;
+    _totalPages = 1;
+
+    loading.value = false;
+    loadingMore.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+
+    totalItems.value = 0;
+    activities.clear();
+
+    actionFilter.value = "";
+    fromDate.value = null;
+    toDate.value = null;
   }
 }

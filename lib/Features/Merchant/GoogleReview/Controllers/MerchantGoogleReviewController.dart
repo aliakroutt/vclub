@@ -5,6 +5,8 @@ import 'package:vclub/Features/Merchant/GoogleReview/Models/GoogleReviewModels.d
 import 'package:vclub/Features/Merchant/GoogleReview/Services/GoogleReviewApiClient.dart';
 
 class MerchantGoogleReviewController extends GetxController {
+  static MerchantGoogleReviewController get to => Get.find();
+
   final Rx<LoyaltyProgramModel?> program = Rx<LoyaltyProgramModel?>(null);
   final RxList<RewardModel> rewards = <RewardModel>[].obs;
 
@@ -160,4 +162,30 @@ class MerchantGoogleReviewController extends GetxController {
   }
 
   Future<void> refresh() => fetchAll();
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears program/rewards data and form state back to initial values.
+  /// Call this on logout so the next fetch starts clean and doesn't
+  /// briefly flash a previous merchant's Google Review settings.
+  void resetControllerData() {
+    program.value = null;
+    rewards.clear();
+
+    loading.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+
+    reviewLink.value = "";
+    selectedReward.value = null;
+    selectedTrigger.value = null;
+
+    isSavingLink.value = false;
+    isSavingRewardSettings.value = false;
+
+    _originalLink = "";
+    _originalRewardId = null;
+    _originalTrigger = null;
+  }
 }

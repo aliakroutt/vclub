@@ -85,6 +85,7 @@ class ClientModel {
   final String lastName;
   final String email;
   final String? phone;
+  final String? avatar;
   final DateTime? birthday;
 
   final ProgramMode programMode;
@@ -104,6 +105,7 @@ class ClientModel {
     required this.lastName,
     required this.email,
     this.phone,
+    this.avatar,
     this.birthday,
     required this.programMode,
     required this.points,
@@ -130,6 +132,7 @@ class ClientModel {
       lastName: client['lastName']?.toString() ?? '',
       email: client['email']?.toString() ?? '',
       phone: client['phone']?.toString(),
+      avatar: client['avatar']?.toString(),
       birthday: parseDate(client['birthday']),
       programMode: ProgramModeX.fromString(
         (program['mode'] ?? json['modes']?[0] ?? 'stamps').toString(),

@@ -108,4 +108,26 @@ class FortuneWheelHistoryController extends GetxController {
     endDate.value = null;
     fetchHistory(reset: true);
   }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears wheel-spin history, filters, and pagination back to initial
+  /// values. Call this on logout so the next fetch starts clean and
+  /// doesn't briefly flash a previous merchant's spin history.
+  void resetControllerData() {
+    _page = 1;
+    _totalPages = 1;
+
+    loading.value = false;
+    loadingMore.value = false;
+    initialLoaded.value = false;
+    error.value = "";
+    totalCount.value = 0;
+
+    startDate.value = null;
+    endDate.value = null;
+
+    items.clear();
+  }
 }

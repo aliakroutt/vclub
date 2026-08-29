@@ -95,6 +95,7 @@ class ClientModel {
   final String lastName;
   final String email;
   final String phone;
+  final String avatar;
   final DateTime? birthday;
   final int points;
   final int stamps;
@@ -114,6 +115,7 @@ class ClientModel {
     required this.lastName,
     required this.email,
     required this.phone,
+    this.avatar = '',
     this.birthday,
     this.points = 0,
     this.stamps = 0,
@@ -134,6 +136,8 @@ class ClientModel {
     final l = lastName.isNotEmpty ? lastName[0] : '';
     return (f + l).toUpperCase();
   }
+
+  bool get hasAvatar => avatar.isNotEmpty;
 
   String get level =>
       tier.isEmpty ? 'Standard' : tier[0].toUpperCase() + tier.substring(1).toLowerCase();
@@ -163,6 +167,7 @@ class ClientModel {
       lastName: client['lastName']?.toString() ?? '',
       email: client['email']?.toString() ?? '',
       phone: client['phone']?.toString() ?? '',
+      avatar: client['avatar']?.toString() ?? '',
       birthday: _parseDate(client['birthday']),
       points: (json['points'] as num?)?.toInt() ?? 0,
       stamps: (json['stamps'] as num?)?.toInt() ?? 0,
@@ -186,6 +191,7 @@ class ClientModel {
       lastName: lastName,
       email: email,
       phone: phone,
+      avatar: avatar,
       birthday: birthday,
       points: (membership['points'] as num?)?.toInt() ?? points,
       stamps: (membership['stamps'] as num?)?.toInt() ?? stamps,
@@ -208,6 +214,7 @@ class ClientModel {
       lastName: lastName,
       email: email,
       phone: phone,
+      avatar: avatar,
       birthday: birthday,
       points: points,
       stamps: stamps,

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -14,14 +13,9 @@ class OnlinePresenceCard extends StatelessWidget {
   static const _accent = Color(0xFF6C5CE7);
 
   ImageProvider? _existingLogoImage() {
-    final logo = controller.existingLogoBase64.value;
+    final logo = controller.existingLogoUrl.value;
     if (logo.isEmpty) return null;
-    try {
-      final base64Str = logo.contains(',') ? logo.split(',').last : logo;
-      return MemoryImage(base64Decode(base64Str));
-    } catch (_) {
-      return null;
-    }
+    return NetworkImage(logo);
   }
 
   @override
@@ -61,9 +55,10 @@ class OnlinePresenceCard extends StatelessWidget {
             final pickedFile = controller.logoFile.value;
             final existingImage = pickedFile == null ? _existingLogoImage() : null;
             final hasAnyLogo = pickedFile != null || existingImage != null;
+            final isUploading = controller.isUploadingLogo.value;
 
             return GestureDetector(
-              onTap: controller.pickLogo,
+              onTap: isUploading ? null : controller.pickLogo,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 width: double.infinity,
@@ -99,9 +94,13 @@ class OnlinePresenceCard extends StatelessWidget {
                           AppText("logo".tr, fontSize: size.width * .036, fontWeight: FontWeight.w700),
                           const SizedBox(height: 4),
                           AppText(!hasAnyLogo ? "upload_logo_hint".tr : "replace_logo_hint".tr, fontSize: size.width * .030, color: Colors.grey),
-                          if (hasAnyLogo) ...[
+                          if (hasAnyLogo && !isUploading) ...[
                             const SizedBox(height: 8),
                             AppText("tap_to_change_logo".tr, fontSize: size.width * .028, color: const Color(0xFF6C5CE7), fontWeight: FontWeight.w600),
+                          ],
+                          if (isUploading) ...[
+                            const SizedBox(height: 8),
+                            AppText("uploading_logo".tr, fontSize: size.width * .028, color: const Color(0xFF6C5CE7), fontWeight: FontWeight.w600),
                           ],
                         ],
                       ),
@@ -110,7 +109,12 @@ class OnlinePresenceCard extends StatelessWidget {
                       width: size.width * .10,
                       height: size.width * .10,
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: const Color(0xFF6C5CE7).withOpacity(.10)),
-                      child: Icon(!hasAnyLogo ? Iconsax.cloud_plus : Iconsax.refresh, color: const Color(0xFF6C5CE7), size: size.width * .05),
+                      child: isUploading
+                          ? Padding(
+                              padding: EdgeInsets.all(size.width * .025),
+                              child: const CircularProgressIndicator(strokeWidth: 2, color: _accent),
+                            )
+                          : Icon(!hasAnyLogo ? Iconsax.cloud_plus : Iconsax.refresh, color: const Color(0xFF6C5CE7), size: size.width * .05),
                     ),
                   ],
                 ),

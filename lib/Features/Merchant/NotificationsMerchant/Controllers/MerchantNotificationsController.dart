@@ -4,6 +4,8 @@ import 'package:vclub/Features/Merchant/NotificationsMerchant/Services/MerchantN
 
 
 class MerchantNotificationsController extends GetxController {
+  static MerchantNotificationsController get to => Get.find();
+
   final RxList<MerchantNotificationModel> notifications =
       <MerchantNotificationModel>[].obs;
 
@@ -81,5 +83,24 @@ class MerchantNotificationsController extends GetxController {
   Future<void> refreshNotifications() async {
     currentPage.value = 1;
     await fetchNotifications(refresh: true);
+  }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears notifications and pagination state back to initial values.
+  /// Call this on logout so the next fetch starts clean and doesn't
+  /// briefly flash a previous merchant's notifications.
+  void resetControllerData() {
+    currentPage.value = 1;
+    totalPages.value = 1;
+    totalItems.value = 0;
+
+    loading.value = false;
+    loadingMore.value = false;
+    error.value = "";
+    initialLoaded.value = false;
+
+    notifications.clear();
   }
 }

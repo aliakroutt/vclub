@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -24,14 +23,9 @@ class MerchantMainDrawer extends StatelessWidget {
   bool get _isBusinessPlan =>
       (MerchantController.to.merchant.value?.company?.stripePlan ?? '').toUpperCase() == 'BUSINESS';
 
-  ImageProvider? _decodeLogo(String? logo) {
+  ImageProvider? _logoProvider(String? logo) {
     if (logo == null || logo.isEmpty) return null;
-    try {
-      final base64Str = logo.contains(',') ? logo.split(',').last : logo;
-      return MemoryImage(base64Decode(base64Str));
-    } catch (_) {
-      return null;
-    }
+    return NetworkImage(logo);
   }
 
   @override
@@ -59,7 +53,7 @@ class MerchantMainDrawer extends StatelessWidget {
                     : (fullName.isNotEmpty ? fullName : "My Business");
 
                 final displayEmail = merchant?.email ?? "merchant@email.com";
-                final logoImage = _decodeLogo(company?.logo);
+                final logoImage = _logoProvider(company?.logo);
                 final isActive = company?.isSubscriptionActive ?? false;
 
                 return Container(

@@ -138,9 +138,15 @@ class _ClientDetailScreenState extends State<ClientDetailScreen>
 }
 
 // ─── Hero Card ─────────────────────────────────────────────────────────────
+// ─── Hero Card ─────────────────────────────────────────────────────────────
 class _HeroCard extends StatelessWidget {
   final ClientModel client;
   const _HeroCard({required this.client});
+
+  ImageProvider? _decodeAvatar(String? avatar) {
+  if (avatar == null || avatar.isEmpty) return null;
+  return NetworkImage(avatar);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +156,7 @@ class _HeroCard extends StatelessWidget {
     final textSub = Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey;
     final gradient = _levelGradient(client.level);
     final divider = Theme.of(context).dividerColor.withOpacity(.10);
+    final avatarImage = _decodeAvatar(client.avatar);
 
     return Container(
       width: double.infinity,
@@ -184,12 +191,32 @@ class _HeroCard extends StatelessWidget {
                   gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
                 ),
               ),
-              Container(
-                width: 76,
-                height: 76,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: cs.surface),
-                alignment: Alignment.center,
-                child: AppText(client.initials, fontSize: 26, fontWeight: FontWeight.w700, color: textBody),
+              ClipOval(
+                child: Container(
+                  width: 76,
+                  height: 76,
+                  color: cs.surface,
+                  alignment: Alignment.center,
+                  child: avatarImage != null
+                      ? Image(
+                          image: avatarImage,
+                          width: 76,
+                          height: 76,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => AppText(
+                            client.initials,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            color: textBody,
+                          ),
+                        )
+                      : AppText(
+                          client.initials,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          color: textBody,
+                        ),
+                ),
               ),
             ],
           ),

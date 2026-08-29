@@ -6,6 +6,8 @@ import 'package:vclub/Features/Merchant/Employee/Services/ApiErrorHnadler.dart';
 import 'package:vclub/Features/Merchant/Employee/Services/MerchantEmployeeApiClient.dart';
 
 class EmployeeController extends GetxController {
+  static EmployeeController get to => Get.find();
+
   final employees = <EmployeeModel>[].obs;
 
   final isLoading = false.obs;       // first load / search reset
@@ -117,6 +119,27 @@ Future<bool> updateEmployee(String id, Map<String, dynamic> payload) async {
     isSubmitting.value = false;
   }
 }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears employees list, search state, and pagination back to initial
+  /// values. Call this on logout so the next fetch starts clean and
+  /// doesn't briefly flash a previous merchant's employee list.
+  void resetControllerData() {
+    _debounce?.cancel();
+
+    _page = 1;
+    _totalPages = 1;
+
+    isLoading.value = false;
+    isLoadingMore.value = false;
+    hasError.value = false;
+    isSubmitting.value = false;
+
+    searchQuery.value = '';
+    employees.clear();
+  }
 
   @override
   void onClose() {

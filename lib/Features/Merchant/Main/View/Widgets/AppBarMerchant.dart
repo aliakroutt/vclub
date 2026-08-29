@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:vclub/Configs/Theme/app_colors.dart';
 import 'package:vclub/Configs/Theme/theme_service.dart';
+import 'package:vclub/Core/Storage/Controllers/MerchantController.dart';
 import 'package:vclub/Features/Client/Main/Views/Widgets/AppBarLanguageSelector.dart';
 import 'package:vclub/Features/Merchant/Main/View/Widgets/NotificationAppBarMerchant.dart';
 
@@ -42,7 +43,9 @@ class _MainAppBarMerchantState extends State<MainAppBarMerchant>
     );
     _themeRotation = Tween<double>(begin: 0, end: 0.5).animate(
       CurvedAnimation(
-          parent: _themeAnimController, curve: Curves.easeInOutBack),
+        parent: _themeAnimController,
+        curve: Curves.easeInOutBack,
+      ),
     );
   }
 
@@ -94,8 +97,7 @@ class _MainAppBarMerchantState extends State<MainAppBarMerchant>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black
-                          .withOpacity(isDark ? 0.25 : 0.06),
+                      color: Colors.black.withOpacity(isDark ? 0.25 : 0.06),
                       blurRadius: 24,
                       offset: const Offset(0, 4),
                     ),
@@ -109,17 +111,14 @@ class _MainAppBarMerchantState extends State<MainAppBarMerchant>
                       _MenuButton(isDark: isDark),
                       const Spacer(),
                       // ── QR code ────────────────────────────
-                      _QrAppBarButton(
-  isDark: isDark,
-  onTap: widget.onQrTap,
-),
-                      const SizedBox(width: 8),
+                     !MerchantController.to.isFreePlan ?  _QrAppBarButton(isDark: isDark, onTap: widget.onQrTap) : SizedBox(),
+                       SizedBox(width: !MerchantController.to.isFreePlan ?  8 : 0),
                       // ── Notifications ─────────────────────
-                      NotificationButtonMerchant(
+                    !MerchantController.to.isFreePlan ?   NotificationButtonMerchant(
                         isDark: isDark,
                         onTap: widget.onNotificationTap,
-                      ),
-                      const SizedBox(width: 8),
+                      ) : SizedBox(),
+                      SizedBox(width: !MerchantController.to.isFreePlan ?  8 : 0),
                       // ── Theme toggle ─────────────────────
                       _AnimatedThemeButton(
                         isDark: isDark,
@@ -170,9 +169,13 @@ class _MenuButtonState extends State<_MenuButton>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 120));
-    _scale = Tween<double>(begin: 1.0, end: 0.88)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 0.88,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -240,9 +243,13 @@ class _AppBarButtonState extends State<_AppBarButton>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 110));
-    _scale = Tween<double>(begin: 1.0, end: 0.88)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+      vsync: this,
+      duration: const Duration(milliseconds: 110),
+    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 0.88,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -329,9 +336,13 @@ class _AnimatedThemeButtonState extends State<_AnimatedThemeButton>
   void initState() {
     super.initState();
     _pressCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 110));
-    _pressScale = Tween<double>(begin: 1.0, end: 0.88)
-        .animate(CurvedAnimation(parent: _pressCtrl, curve: Curves.easeInOut));
+      vsync: this,
+      duration: const Duration(milliseconds: 110),
+    );
+    _pressScale = Tween<double>(
+      begin: 1.0,
+      end: 0.88,
+    ).animate(CurvedAnimation(parent: _pressCtrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -403,9 +414,13 @@ class _QrAppBarButtonState extends State<_QrAppBarButton>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 110));
-    _scale = Tween<double>(begin: 1.0, end: 0.88)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+      vsync: this,
+      duration: const Duration(milliseconds: 110),
+    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 0.88,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override

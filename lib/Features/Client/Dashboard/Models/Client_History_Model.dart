@@ -6,7 +6,7 @@ class HistoryModel {
   final String? actorId;
   final String action;
   final String? actorRole;
-  final int? amount;
+  final num? amount;
   final Map<String, dynamic>? metadata;
   final String createdAt;
   final String updatedAt;

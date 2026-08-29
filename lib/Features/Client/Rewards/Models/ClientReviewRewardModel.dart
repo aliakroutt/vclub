@@ -79,3 +79,60 @@ class GoogleReviewReward {
     };
   }
 }
+class ReviewStartModel {
+  final String reviewToken;
+  final int minDwellSeconds;
+
+  ReviewStartModel({required this.reviewToken, required this.minDwellSeconds});
+
+  factory ReviewStartModel.fromJson(Map<String, dynamic> json) {
+    return ReviewStartModel(
+      reviewToken: json['reviewToken'] ?? '',
+      minDwellSeconds: json['minDwellSeconds'] ?? 0,
+    );
+  }
+}
+
+class ReviewClaimReward {
+  final String id;
+  final String name;
+  final String type;
+
+  ReviewClaimReward({required this.id, required this.name, required this.type});
+
+  factory ReviewClaimReward.fromJson(Map<String, dynamic> json) {
+    return ReviewClaimReward(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      type: json['type']?.toString() ?? '',
+    );
+  }
+}
+
+class ReviewClaimModel {
+  final bool claimed;
+  final bool alreadyClaimed;
+  final ReviewClaimReward? reward;
+  final String? code;
+  final String? googleReviewLink;
+
+  ReviewClaimModel({
+    required this.claimed,
+    required this.alreadyClaimed,
+    this.reward,
+    this.code,
+    this.googleReviewLink,
+  });
+
+  factory ReviewClaimModel.fromJson(Map<String, dynamic> json) {
+    return ReviewClaimModel(
+      claimed: json['claimed'] ?? false,
+      alreadyClaimed: json['alreadyClaimed'] ?? false,
+      reward: json['reward'] != null
+          ? ReviewClaimReward.fromJson(Map<String, dynamic>.from(json['reward']))
+          : null,
+      code: json['code']?.toString(),
+      googleReviewLink: json['googleReviewLink']?.toString(),
+    );
+  }
+}

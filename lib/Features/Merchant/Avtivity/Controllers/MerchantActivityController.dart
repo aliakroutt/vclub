@@ -8,6 +8,7 @@ import 'package:vclub/Features/Merchant/Employee/Models/EmployesModel.dart';
 
 
 class MerchantActivityController extends GetxController {
+  static MerchantActivityController get to => Get.find();
   final RxList<MerchantActivityItem> activities = <MerchantActivityItem>[].obs;
 
   final RxBool loading = false.obs;
@@ -137,5 +138,30 @@ class MerchantActivityController extends GetxController {
     fromDate.value = null;
     toDate.value = null;
     fetchActivities(reset: true);
+  }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears all activity data, filters, and pagination state back to their
+  /// initial values. Call this on logout so the next fetch starts clean
+  /// and doesn't briefly flash a previous merchant's activity feed.
+  void resetControllerData() {
+    _page = 1;
+    _totalPages = 1;
+
+    loading.value = false;
+    loadingMore.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+
+    totalItems.value = 0;
+    activities.clear();
+
+    actionFilter.value = "";
+    clientFilter.value = null;
+    staffFilter.value = null;
+    fromDate.value = null;
+    toDate.value = null;
   }
 }

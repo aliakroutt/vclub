@@ -38,6 +38,11 @@ class _ProfileSummaryCardState extends State<ProfileSummaryCard> with SingleTick
     super.dispose();
   }
 
+  ImageProvider? _avatarProvider(String? avatar) {
+    if (avatar == null || avatar.isEmpty) return null;
+    return NetworkImage(avatar);
+  }
+
   String get _initials {
     final c = widget.client;
     if (c == null) return '';
@@ -113,49 +118,53 @@ class _ProfileSummaryCardState extends State<ProfileSummaryCard> with SingleTick
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: widget.onChangeAvatar,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        AnimatedBuilder(
-                          animation: _glowCtrl,
-                          builder: (context, child) {
-                            final glow = 0.10 + (_glowCtrl.value * 0.12);
-                            return Container(
-                              width: avatarSize,
-                              height: avatarSize,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(color: AppColors.primary.withOpacity(glow), blurRadius: 26, spreadRadius: 2),
-                                ],
-                              ),
-                              child: child,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.primary.withOpacity(0.35), width: 2),
-                            ),
-                            child: ClipOval(
-                              child: (client?.avatar != null && client!.avatar!.isNotEmpty)
-                                  ? Image.network(
-                                      client.avatar!,
-                                      width: avatarSize,
-                                      height: avatarSize,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => _fallback(avatarSize),
-                                    )
-                                  : _fallback(avatarSize),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                 GestureDetector(
+  onTap: widget.onChangeAvatar,
+  child: Stack(
+    clipBehavior: Clip.none,
+    children: [
+      AnimatedBuilder(
+        animation: _glowCtrl,
+        builder: (context, child) {
+          final glow = 0.10 + (_glowCtrl.value * 0.12);
+          return Container(
+            width: avatarSize,
+            height: avatarSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: AppColors.primary.withOpacity(glow), blurRadius: 26, spreadRadius: 2),
+              ],
+            ),
+            child: child,
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.primary.withOpacity(0.35), width: 2),
+          ),
+          child: ClipOval(
+            child: _avatarProvider(client?.avatar) != null
+                ? Image(
+                    image: _avatarProvider(client?.avatar)!,
+                    width: avatarSize,
+                    height: avatarSize,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return _fallback(avatarSize);
+                    },
+                    errorBuilder: (_, __, ___) => _fallback(avatarSize),
+                  )
+                : _fallback(avatarSize),
+          ),
+        ),
+      ),
+    ],
+  ),
+),
                   SizedBox(height: size.height * 0.012),
                   AppText(_fullName, fontSize: 19, fontWeight: FontWeight.w800),
                   const SizedBox(height: 4),

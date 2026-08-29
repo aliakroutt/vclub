@@ -76,14 +76,16 @@ class _ProgramsListCardState extends State<ProgramsListCard> {
     return Obx(() {
       // ── ERROR STATE ─────────────────────────────
       if (controller.error.value.isNotEmpty && controller.programs.isEmpty) {
-        return _MessageState(
-          icon: Iconsax.warning_2,
-          iconColor: Colors.redAccent,
-          message: controller.error.value,
-          actionLabel: "retry_merchant".tr,
-          onAction: () => controller.fetchPrograms(),
-          size: size,
-          isDark: isDark,
+        return Center(
+          child: _MessageState(
+            icon: Iconsax.warning_2,
+            iconColor: Colors.redAccent,
+            message: controller.error.value,
+            actionLabel: "retry_merchant".tr,
+            onAction: () => controller.fetchPrograms(),
+            size: size,
+            isDark: isDark,
+          ),
         );
       }
 
@@ -861,9 +863,11 @@ class _MessageState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: size.height * .06),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 140),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(16),

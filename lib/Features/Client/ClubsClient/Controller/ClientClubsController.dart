@@ -5,6 +5,8 @@ import 'package:vclub/Features/Client/ClubsClient/Services/ClubsApiService.dart'
 
 
 class CardsController extends GetxController {
+  static CardsController get to => Get.find();
+
   // ---- Merchant / programs (single club) ----
   final Rxn<Merchant> merchant = Rxn<Merchant>();
   final RxBool isLoadingPrograms = false.obs;
@@ -15,11 +17,7 @@ class CardsController extends GetxController {
   final RxBool isLoadingCards = false.obs;
   final RxString cardsError = ''.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    // fetchClientCards();
-  }
+ 
 
   /// Loads a club's programs by slug (e.g. when opening a merchant page).
   Future<void> fetchPrograms(String clubSlug) async {
@@ -52,4 +50,20 @@ class CardsController extends GetxController {
   }
 
   Future<void> refreshCards() => fetchClientCards();
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears merchant/programs and client cards data back to initial
+  /// values. Call this on logout so the next fetch starts clean and
+  /// doesn't briefly flash a previous client's clubs/cards.
+  void resetControllerData() {
+    merchant.value = null;
+    isLoadingPrograms.value = false;
+    programsError.value = '';
+
+    cards.clear();
+    isLoadingCards.value = false;
+    cardsError.value = '';
+  }
 }

@@ -113,13 +113,13 @@ class _ClubScreenState extends State<ClubScreen> {
                 child: ClubRoleActionCard(
                   role: widget.role,
                   onLogin: () {
-                    // TODO: navigate to login screen
+                    
                   },
                   onSignup: () {
-                    // TODO: navigate to signup screen
+                   
                   },
                   onViewMyCards: () {
-                    // TODO: navigate to merchant's cards/dashboard screen
+                   
                   },
                 ),
               ),

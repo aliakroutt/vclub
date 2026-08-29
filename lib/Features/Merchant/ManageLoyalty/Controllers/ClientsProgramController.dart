@@ -139,6 +139,6 @@ class ProgramClientsController extends GetxController {
 
   void freezeProgram() {
     programActive.toggle();
-    // TODO: call freeze/unfreeze endpoint here
+
   }
 }

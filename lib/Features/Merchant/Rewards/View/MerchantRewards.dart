@@ -5,6 +5,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:vclub/Configs/Theme/app_colors.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
 import 'package:vclub/Core/Widgets/animated_entry.dart';
+import 'package:vclub/Features/Merchant/QRScanner/QrSCanner.dart';
 import 'package:vclub/Features/Merchant/Rewards/Controllers/RewardsMerchantController.dart';
 import 'package:vclub/Features/Merchant/Rewards/View/Widgets/AddRewardSheet.dart';
 import 'package:vclub/Features/Merchant/Rewards/View/Widgets/RewardsCard.dart';
@@ -257,7 +258,9 @@ class _ValidateBarState extends State<ValidateBar> {
 
         /// SCAN QR — small icon-only
         _PressableScale(
-          onTap: controller.validateRewardByScan,
+          onTap: (){
+          Get.to(QrScannerMerchant(isRedeem: true));
+          },
           child: Container(
             width: height,
             height: height,
@@ -363,10 +366,10 @@ class _ValidateBarState extends State<ValidateBar> {
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: controller.isValidatingCode.value
                     ? SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 15,
+                        height: 15,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
+                          strokeWidth: 2,
                           color: AppColors.primary,
                         ),
                       )

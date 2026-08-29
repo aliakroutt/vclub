@@ -5,8 +5,8 @@ import 'package:vclub/Core/Widgets/animated_entry.dart';
 import 'package:vclub/Features/Client/Dashboard/Controllers/ClientDashboardController.dart';
 import 'package:vclub/Features/Client/Rewards/Controllers/RewardsClientController.dart';
 import 'package:vclub/Features/Client/Rewards/View/Widgets/FortuneRewardsList.dart';
+import 'package:vclub/Features/Client/Rewards/View/Widgets/GoogleReviewTabContent.dart';
 import 'package:vclub/Features/Client/Rewards/View/Widgets/ProgramsRewardList.dart';
-import 'package:vclub/Features/Client/Rewards/View/Widgets/ReviewsCard.dart';
 import 'package:vclub/Features/Client/Rewards/View/Widgets/RewardStatsCard.dart';
 import 'package:vclub/Features/Client/Rewards/View/Widgets/RewardsTabBar.dart';
 
@@ -26,7 +26,7 @@ class _MyRewardsState extends State<MyRewards> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       dashcontroller.fetchRewards();
       dashcontroller.fetchWheelHistory();
-      controller.fetchGoogleReview();
+      controller.fetchAll();
     });
   }
 
@@ -93,14 +93,14 @@ class _MyRewardsState extends State<MyRewards> {
                 SizedBox(height: size.height * 0.02),
                 FadeSlide(delayMs: 350, child: RewardsTabBar(isDark: isDark)),
                 SizedBox(height: size.height * 0.01),
-               FadeSlide(delayMs: 400, child: Obx(() {
+             FadeSlide(delayMs: 400, child: Obx(() { 
                   switch (controller.selectedIndex.value) {
                     case 0:
                       return ProgramsRewardsList(height:size.height * 0.52 ,);
                     case 1:
                       return FortuneRewardsList(height:size.height * 0.52 ,);
                     default:
-                      return GoogleReviewRewardCard(review: controller.googleReview.value!,);
+                      return  GoogleReviewTabContent();
                   }
                 })),
 

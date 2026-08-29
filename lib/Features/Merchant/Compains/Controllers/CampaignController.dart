@@ -6,6 +6,8 @@ import 'package:vclub/Features/Merchant/Employee/Services/ApiErrorHnadler.dart';
 
 
 class CampaignController extends GetxController {
+  static CampaignController get to => Get.find();
+
   final campaigns = <CampaignModel>[].obs;
 
   final isLoading = false.obs;      // first load
@@ -76,4 +78,22 @@ class CampaignController extends GetxController {
     isDeletingId.value = null;
   }
 }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears campaigns list and pagination state back to initial values.
+  /// Call this on logout so the next fetch starts clean and doesn't
+  /// briefly flash a previous merchant's campaigns.
+  void resetControllerData() {
+    _page = 1;
+    _totalPages = 1;
+
+    isLoading.value = false;
+    isLoadingMore.value = false;
+    hasError.value = false;
+    isDeletingId.value = null;
+
+    campaigns.clear();
+  }
 }

@@ -3,6 +3,8 @@ import 'package:vclub/Features/Merchant/Redemptions/Models/MerchantRedemptionMod
 import 'package:vclub/Features/Merchant/Redemptions/Services/MerchantRedemptionsApiClient.dart';
 
 class MerchantRedemptionsController extends GetxController {
+  static MerchantRedemptionsController get to => Get.find();
+
   final RxList<MerchantRedemptionItem> redemptions = <MerchantRedemptionItem>[].obs;
 
   final RxBool loading = false.obs;
@@ -100,5 +102,28 @@ class MerchantRedemptionsController extends GetxController {
     fromDate.value = null;
     toDate.value = null;
     fetchRedemptions(reset: true);
+  }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears redemptions list, filters, and pagination back to initial
+  /// values. Call this on logout so the next fetch starts clean and
+  /// doesn't briefly flash a previous merchant's redemptions.
+  void resetControllerData() {
+    _page = 1;
+    _totalPages = 1;
+
+    loading.value = false;
+    loadingMore.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+
+    totalItems.value = 0;
+    redemptions.clear();
+
+    statusFilter.value = RedemptionStatus.unknown;
+    fromDate.value = null;
+    toDate.value = null;
   }
 }

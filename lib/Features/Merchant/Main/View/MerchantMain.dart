@@ -4,19 +4,33 @@ import 'package:vclub/Configs/Theme/theme_service.dart';
 import 'package:vclub/Core/BottomSheets.dart';
 import 'package:vclub/Core/Navigation/app_navigator.dart';
 import 'package:vclub/Core/Storage/Controllers/MerchantController.dart';
-import 'package:vclub/Core/Storage/TokenStorage.dart';
-import 'package:vclub/Core/Storage/UserStorage.dart';
-import 'package:vclub/Features/Auth/Views/Login.dart';
+import 'package:vclub/Features/Auth/Services/LogoutService.dart';
+import 'package:vclub/Features/Merchant/Audit/Controllers/MerchantAuditController.dart';
+import 'package:vclub/Features/Merchant/Avtivity/Controllers/MerchantActivityController.dart';
+import 'package:vclub/Features/Merchant/Billing/Controllers/InvoicesController.dart';
+import 'package:vclub/Features/Merchant/Billing/Controllers/PlansController.dart';
+import 'package:vclub/Features/Merchant/Billing/Controllers/SmsAddonController.dart';
+import 'package:vclub/Features/Merchant/Clients/Controllers/MerchantClientsController.dart';
+import 'package:vclub/Features/Merchant/Compains/Controllers/CampaignController.dart';
 import 'package:vclub/Features/Merchant/Dashboard/Controllers/MerchantDashController.dart';
+import 'package:vclub/Features/Merchant/Employee/Controllers/EmployeeController.dart';
+import 'package:vclub/Features/Merchant/FortuneWheel/Controllers/FortuneWheelHistoryController.dart';
+import 'package:vclub/Features/Merchant/FortuneWheel/Controllers/FortuneWheelHomeController.dart';
+import 'package:vclub/Features/Merchant/GoogleReview/Controllers/MerchantGoogleReviewController.dart';
 import 'package:vclub/Features/Merchant/Main/Controllers/MerchantMainController.dart';
 import 'package:vclub/Features/Merchant/Main/View/Widgets/AppBarMerchant.dart';
 import 'package:vclub/Features/Merchant/Main/View/Widgets/DrawerMerchant.dart';
 import 'package:vclub/Features/Merchant/Main/View/Widgets/MerchantNavBar.dart';
 import 'package:vclub/Features/Merchant/ManageLoyalty/Controllers/MerchantProgramsController.dart';
+import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsController.dart';
+import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsListController.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/View/NotificationsMerchant.dart';
 import 'package:vclub/Features/Merchant/QRScanner/QrSCanner.dart';
 import 'package:vclub/Features/Merchant/QRcode/View/MerchantQrCodeScreen.dart';
 import 'package:vclub/Features/Merchant/QRcode/View/SlideUpRoute.dart';
+import 'package:vclub/Features/Merchant/Redemptions/Controllers/MerchantRedemptionsController.dart';
+import 'package:vclub/Features/Merchant/Rewards/Controllers/RewardsMerchantController.dart';
+import 'package:vclub/Features/Merchant/Settings/Controllers/SessionsController.dart';
 
 class MainScreenMerchant extends StatefulWidget {
   const MainScreenMerchant({super.key});
@@ -45,19 +59,36 @@ class _MainScreenMerchantState extends State<MainScreenMerchant> {
             AppNavigator.to(NotificationsInboxMerchant());
           },
           themeService: Get.find<ThemeService>(),
-          onLogout: () {
-            showLogoutBottomSheet(
-              onConfirm: () async {
-                await TokenStorage.clear();
-                UserStorage.clear();
-                MerchantController.to.clear();
-                MerchantDashboardController.to.resetControllerData();
-                MerchantProgramsController.to.resetControllerData();
-                AppNavigator.to(Login());
-                controller.selectIndex(0);
-              },
-            );
-          },
+         onLogout: () {
+  showLogoutBottomSheet(
+    onConfirm: () async {
+      await LogoutService.logout(
+        resetControllers: [
+          safeReset<MerchantController>(() => MerchantController.to.clear()),
+          safeReset<MerchantDashboardController>(() => MerchantDashboardController.to.resetControllerData()),
+          safeReset<MerchantProgramsController>(() => MerchantProgramsController.to.resetControllerData()),
+          safeReset<MerchantAuditController>(() => MerchantAuditController.to.resetControllerData()),
+          safeReset<MerchantActivityController>(() => MerchantActivityController.to.resetControllerData()),
+          safeReset<InvoicesController>(() => InvoicesController.to.resetControllerData()),
+          safeReset<PlansController>(() => PlansController.to.resetControllerData()),
+          safeReset<SmsAddonController>(() => SmsAddonController.to.resetControllerData()),
+          safeReset<ClientsController>(() => ClientsController.to.resetControllerData()),
+          safeReset<CampaignController>(() => CampaignController.to.resetControllerData()),
+          safeReset<EmployeeController>(() => EmployeeController.to.resetControllerData()),
+          safeReset<FortuneWheelHistoryController>(() => FortuneWheelHistoryController.to.resetControllerData()),
+          safeReset<FortuneWheelHomeController>(() => FortuneWheelHomeController.to.resetControllerData()),
+          safeReset<MerchantGoogleReviewController>(() => MerchantGoogleReviewController.to.resetControllerData()),
+          safeReset<MerchantNotificationsController>(() => MerchantNotificationsController.to.resetControllerData()),
+          safeReset<MerchantNotificationsListController>(() => MerchantNotificationsListController.to.resetNotifications()),
+          safeReset<MerchantRedemptionsController>(() => MerchantRedemptionsController.to.resetControllerData()),
+          safeReset<RewardsMerchantController>(() => RewardsMerchantController.to.resetControllerData()),
+          safeReset<SessionsController>(() => SessionsController.to.resetControllerData()),
+        ],
+      );
+      controller.selectIndex(0);
+    },
+  );
+},
         ),
 
         drawer: SafeArea(

@@ -1,12 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:vclub/API/ApiClient.dart';
+import 'package:vclub/API/SocketService.dart';
 import 'package:vclub/Configs/Theme/app_theme.dart';
 import 'package:vclub/Configs/Theme/theme_service.dart';
 import 'package:vclub/Configs/Translations/app_translations.dart';
 import 'package:vclub/Configs/Translations/language_service.dart';
+import 'package:vclub/Core/Notifications/InitNotifications.dart';
 import 'package:vclub/Core/Storage/Controllers/AgentController.dart';
 import 'package:vclub/Core/Storage/Controllers/ClientController.dart';
 import 'package:vclub/Core/Storage/Controllers/MerchantController.dart';
@@ -23,12 +27,27 @@ import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/Compos
 import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsController.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsListController.dart';
 import 'package:vclub/Core/DeepLink/DeepLinkService.dart';
+import 'package:vclub/firebase_options.dart';
+
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    // Background notifications are shown natively by the OS from the FCM
+    // payload itself — no need to call showNotificationFromFCM here unless
+    // you want custom formatting even in background.
+  } catch (e) {
+    debugPrint('⚠️ Background handler error: $e');
+  }
+}
 Future<void> main() async {
-  
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await initNotifications();
   await TokenStorage.init();
   await ApiClient.init();
-  
+
   print('1. Binding initialized');
   final languageService = Get.put(LanguageService());
   print('2. LanguageService created');
@@ -40,7 +59,7 @@ Future<void> main() async {
   print('5. ThemeMode obtained: $themeMode');
   runApp(MyApp(locale: locale, themeMode: themeMode));
   print('6. runApp called');
-   WidgetsBinding.instance.addPostFrameCallback((_) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     DeepLinkService.instance.init();
   });
 }
@@ -66,17 +85,17 @@ class MyApp extends StatelessWidget {
       ),
     );
     return GetMaterialApp(
-        
-       initialBinding: BindingsBuilder(() {
+      initialBinding: BindingsBuilder(() {
+        Get.put(SocketService(), permanent: true);
         Get.put(ForgotPasswordController(), permanent: true);
         Get.put(ClientController(), permanent: true);
         Get.put(MerchantController(), permanent: true);
         Get.put(ClientDashboardController(), permanent: true);
         Get.put(SignUpController(), permanent: true);
         Get.put(NotificationsController(), permanent: true);
-        Get.put(GoogleReviewController(), permanent: true); 
-        Get.put(MerchantDashboardController(), permanent: true);  
-        Get.put(MerchantProgramsController(), permanent: true); 
+        Get.put(GoogleReviewController(), permanent: true);
+        Get.put(MerchantDashboardController(), permanent: true);
+        Get.put(MerchantProgramsController(), permanent: true);
         Get.put(MerchantNotificationsController(), permanent: true);
         Get.put(ComposeNotificationController(), permanent: true);
         Get.put(MerchantNotificationsListController(), permanent: true);

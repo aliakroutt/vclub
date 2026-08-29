@@ -1,54 +1,86 @@
 import 'package:get/get.dart';
+import 'package:vclub/Features/Client/FortuneWheel/Models/FortuneWheelModels.dart';
+import 'package:vclub/Features/Client/FortuneWheel/Services/FortuneWheelApiClient.dart';
 import 'package:vclub/Features/Client/Rewards/Models/ClientReviewRewardModel.dart';
 import 'package:vclub/Features/Client/Rewards/Services/RewardsClientService.dart';
 
-class GoogleReviewController extends GetxController {
-  final Rxn<GoogleReviewModel> googleReview = Rxn<GoogleReviewModel>();
 
-  final RxBool reviewLoading = false.obs;
-  final RxString reviewError = "".obs;
+class CompanyReviewEntry {
+  final ClientCompanyModel company;
+  final GoogleReviewModel? review;
+
+  CompanyReviewEntry({required this.company, this.review});
+}
+
+class GoogleReviewController extends GetxController {
+  static GoogleReviewController get to => Get.find();
+
+  final RxList<CompanyReviewEntry> entries = <CompanyReviewEntry>[].obs;
+
+  final RxBool loading = false.obs;
+  final RxBool hasError = false.obs;
   final RxBool initialLoaded = false.obs;
 
-   final RxInt selectedIndex = 0.obs; // 0=programs, 1=fortune, 2=review
+  final RxInt selectedIndex = 0.obs; // 0=programs, 1=fortune, 2=review
 
   void select(int index) => selectedIndex.value = index;
 
-  // @override
-  // void onInit() {
-  //   super.onInit();
-  //   fetchGoogleReview();
-  // }
+  @override
+  void onInit() {
+    super.onInit();
+    fetchAll();
+  }
 
-  Future<void> fetchGoogleReview() async {
+  /// Loads every joined company, then fetches each company's Google
+  /// Review reward info in parallel and combines them into one list.
+  Future<void> fetchAll() async {
     try {
-      if (!initialLoaded.value) {
-        reviewLoading.value = true;
-      }
+      loading.value = true;
+      hasError.value = false;
 
-      reviewError.value = "";
+      final companyList = await FortuneWheelApiClient.getMemberships();
 
-      final result =
-          await GoogleReviewApiClient.getGoogleReview();
+      final seen = <String>{};
+      final uniqueCompanies = companyList
+          .where((c) => c.companyId.isNotEmpty)
+          .where((c) => seen.add(c.companyId))
+          .toList();
 
-      googleReview.value = result;
+      final reviews = await Future.wait(
+        uniqueCompanies.map((company) async {
+          try {
+            final review = await GoogleReviewApiClient.getGoogleReview(company.companyId);
+            return CompanyReviewEntry(company: company, review: review);
+          } catch (_) {
+            return CompanyReviewEntry(company: company, review: null);
+          }
+        }),
+      );
 
-      initialLoaded.value = true;
+      entries.assignAll(reviews);
+      hasError.value = false;
     } catch (e) {
-      reviewError.value = "failed_load_google_review".tr;
-      // AppSnackBar.error("failed_load_google_review".tr);
+      hasError.value = true;
+      entries.clear();
     } finally {
-      reviewLoading.value = false;
+      loading.value = false;
+      initialLoaded.value = true;
     }
   }
 
-  void resetGoogleReview() {
-    googleReview.value = null;
-    reviewError.value = "";
-    reviewLoading.value = false;
-    initialLoaded.value = false;
-  }
+  Future<void> refresh() => fetchAll();
 
-  Future<void> refreshGoogleReview() async {
-    await fetchGoogleReview();
+  // =========================
+  // RESET
+  // =========================
+  /// Clears company/review entries and tab selection back to initial
+  /// values. Call this on logout so the next fetch starts clean and
+  /// doesn't briefly flash a previous client's review data.
+  void resetControllerData() {
+    entries.clear();
+    loading.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+    selectedIndex.value = 0;
   }
 }

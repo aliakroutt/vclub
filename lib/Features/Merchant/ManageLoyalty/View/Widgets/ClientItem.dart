@@ -20,7 +20,12 @@ class ClientListItem extends StatelessWidget {
   /// Expects `client.joinedAt` to be a [DateTime]. If it's still a [String]
   /// in your model, parse it first (e.g. DateTime.parse(client.joinedAt)).
   String _formatJoinedDate() {
-  return DateFormat('dd MMM yyyy').format(client.createdAt);
+    return DateFormat('dd MMM yyyy').format(client.createdAt);
+  }
+
+  ImageProvider? _decodeAvatar(String? avatar) {
+  if (avatar == null || avatar.isEmpty) return null;
+  return NetworkImage(avatar);
 }
 
   @override
@@ -28,6 +33,7 @@ class ClientListItem extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final levelColors = client.level.gradient;
+    final avatarImage = _decodeAvatar(client.avatar);
 
     return Padding(
       padding: EdgeInsets.only(bottom: size.height * .014),
@@ -63,30 +69,46 @@ class ClientListItem extends StatelessWidget {
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        Container(
-                          width: size.width * .134,
-                          height: size.width * .134,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: levelColors,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: levelColors.last.withOpacity(.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 5),
+                        ClipOval(
+                          child: Container(
+                            width: size.width * .134,
+                            height: size.width * .134,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: levelColors,
                               ),
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: AppText(
-                            client.initials,
-                            fontSize: size.width * .036,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            ),
+                            foregroundDecoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: levelColors.last.withOpacity(.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: avatarImage != null
+                                ? Image(
+                                    image: avatarImage,
+                                    width: size.width * .134,
+                                    height: size.width * .134,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => AppText(
+                                      client.initials,
+                                      fontSize: size.width * .036,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : AppText(
+                                    client.initials,
+                                    fontSize: size.width * .036,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
                           ),
                         ),
                         Positioned(
@@ -206,34 +228,33 @@ class ClientListItem extends StatelessWidget {
                 SizedBox(height: size.height * .014),
 
                 // Stats row
-                // replace the stats Row's three _StatChip entries with:
-Row(
-  children: [
-    Expanded(
-      child: _StatChip(
-        icon: client.primaryStatIcon,
-        label: client.primaryStatLabelKey.tr,
-        value: '${client.primaryStatValue}',
-      ),
-    ),
-    _VerticalDivider(size: size),
-    Expanded(
-      child: _StatChip(
-        icon: Iconsax.shop,
-        label: 'stat_visits'.tr,
-        value: '${client.visits}',
-      ),
-    ),
-    _VerticalDivider(size: size),
-    Expanded(
-      child: _StatChip(
-        icon: Iconsax.gift,
-        label: 'stat_rewards'.tr,
-        value: '${client.rewardsUsed}',
-      ),
-    ),
-  ],
-),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatChip(
+                        icon: client.primaryStatIcon,
+                        label: client.primaryStatLabelKey.tr,
+                        value: '${client.primaryStatValue}',
+                      ),
+                    ),
+                    _VerticalDivider(size: size),
+                    Expanded(
+                      child: _StatChip(
+                        icon: Iconsax.shop,
+                        label: 'stat_visits'.tr,
+                        value: '${client.visits}',
+                      ),
+                    ),
+                    _VerticalDivider(size: size),
+                    Expanded(
+                      child: _StatChip(
+                        icon: Iconsax.gift,
+                        label: 'stat_rewards'.tr,
+                        value: '${client.rewardsUsed}',
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

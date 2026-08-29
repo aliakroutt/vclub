@@ -52,7 +52,13 @@ class MainDrawer extends StatelessWidget {
         ),
       ],
     ),
-    child: Row(
+    child: Builder(
+  builder: (context) {
+    final avatarImage = _avatarProvider(profilecontroller.client.value?.avatar);
+    final firstName = profilecontroller.client.value?.firstName ?? '';
+    final lastName = profilecontroller.client.value?.lastName ?? '';
+
+    return Row(
       children: [
         // ── AVATAR ─────────────────────────────────────────────
         Container(
@@ -60,9 +66,27 @@ class MainDrawer extends StatelessWidget {
           width: 52,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: primary.withOpacity(.10),
+            gradient: avatarImage == null
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [primary.withOpacity(.22), primary.withOpacity(.06)],
+                  )
+                : null,
+            color: avatarImage == null ? null : Colors.transparent,
+            image: avatarImage != null ? DecorationImage(image: avatarImage, fit: BoxFit.cover) : null,
+            border: Border.all(color: primary.withOpacity(.20), width: 1.6),
           ),
-          child: Icon(Iconsax.user, color: primary, size: 24),
+          child: avatarImage == null
+              ? Center(
+                  child: AppText(
+                    _initials(firstName, lastName),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: primary,
+                  ),
+                )
+              : null,
         ),
 
         SizedBox(width: size.width * 0.035),
@@ -73,27 +97,13 @@ class MainDrawer extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppText(
-                "${profilecontroller.client.value!.firstName} ${profilecontroller.client.value!.lastName}",
+                "$firstName $lastName",
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
-        //       const SizedBox(height: 4),
-        //        Container(
-        //   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-        //   decoration: BoxDecoration(
-        //     color: primary.withOpacity(.10),
-        //     borderRadius: BorderRadius.circular(20),
-        //   ),
-        //   child: AppText(
-        //     "merchant",
-        //     fontSize: 10.5,
-        //     fontWeight: FontWeight.w700,
-        //     color: primary,
-        //   ),
-        // ),
-        const SizedBox(height: 4),
+              const SizedBox(height: 4),
               AppText(
-                profilecontroller.client.value!.email,
+                profilecontroller.client.value?.email ?? '',
                 fontSize: 12.5,
                 color: Colors.grey,
               ),
@@ -101,12 +111,11 @@ class MainDrawer extends StatelessWidget {
           ),
         ),
 
-       
-
         // ── MERCHANT BADGE ───────────────────────────────────────
-       
       ],
-    ),
+    );
+  },
+),
   ),
 ),
 
@@ -200,17 +209,6 @@ class MainDrawer extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // AnimatedContainer(
-            //   duration: const Duration(milliseconds: 250),
-            //   width: 4,
-            //   height: 32,
-            //   decoration: BoxDecoration(
-            //     color: isSelected ? primary : Colors.transparent,
-            //     borderRadius: BorderRadius.circular(50),
-            //   ),
-            // ),
-
-            // const SizedBox(width: 10),
             Container(
               height: 42,
               width: 42,
@@ -244,4 +242,16 @@ class MainDrawer extends StatelessWidget {
       ),
     );
   }
+}
+
+ImageProvider? _avatarProvider(String? avatar) {
+  if (avatar == null || avatar.isEmpty) return null;
+  return NetworkImage(avatar);
+}
+
+String _initials(String firstName, String lastName) {
+  final f = firstName.isNotEmpty ? firstName[0] : '';
+  final l = lastName.isNotEmpty ? lastName[0] : '';
+  final combined = (f + l).toUpperCase();
+  return combined.isNotEmpty ? combined : '?';
 }

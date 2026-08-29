@@ -4,6 +4,7 @@ import 'package:vclub/Features/Merchant/Audit/Models/MerchantAuditModel.dart';
 import 'package:vclub/Features/Merchant/Audit/Services/MerchantAuditApiClient.dart';
 
 class MerchantAuditController extends GetxController {
+  static MerchantAuditController get to => Get.find();
   final RxList<MerchantAuditItem> logs = <MerchantAuditItem>[].obs;
 
   final RxBool loading = false.obs;
@@ -105,6 +106,32 @@ class MerchantAuditController extends GetxController {
     fromDate.value = null;
     toDate.value = null;
     fetchLogs(reset: true);
+  }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears all logs, filters, pagination state, and flags back to their
+  /// initial values. Call this on logout so the next fetch starts clean
+  /// and doesn't briefly flash a previous merchant's audit data.
+  void resetControllerData() {
+    _debounce?.cancel();
+    _debounce = null;
+
+    _page = 1;
+    _totalPages = 1;
+
+    loading.value = false;
+    loadingMore.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+
+    totalItems.value = 0;
+    logs.clear();
+
+    actionQuery.value = "";
+    fromDate.value = null;
+    toDate.value = null;
   }
 
   @override

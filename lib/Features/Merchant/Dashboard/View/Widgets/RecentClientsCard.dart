@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -168,10 +170,21 @@ class _ClientTile extends StatelessWidget {
     return email.isNotEmpty ? email[0].toUpperCase() : "?";
   }
 
+  ImageProvider? _decodeAvatar(String? avatar) {
+    if (avatar == null || avatar.isEmpty) return null;
+    try {
+      final b64 = avatar.contains(',') ? avatar.split(',').last : avatar;
+      return MemoryImage(base64Decode(b64));
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final avatarImage = _decodeAvatar(client.client.avatar);
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -192,25 +205,38 @@ class _ClientTile extends StatelessWidget {
       child: Row(
         children: [
           /// Avatar
-          Container(
-            width: size.width * .12,
-            height: size.width * .12,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  _accent.withOpacity(.20),
-                  _accent.withOpacity(.08),
-                ],
+          ClipOval(
+            child: Container(
+              width: size.width * .12,
+              height: size.width * .12,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    _accent.withOpacity(.20),
+                    _accent.withOpacity(.08),
+                  ],
+                ),
               ),
-            ),
-            child: Center(
-              child: AppText(
-                _initial,
-                fontSize: size.width * .045,
-                fontWeight: FontWeight.w800,
-                color: _accent,
-              ),
+              alignment: Alignment.center,
+              child: avatarImage != null
+                  ? Image(
+                      image: avatarImage,
+                      width: size.width * .12,
+                      height: size.width * .12,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => AppText(
+                        _initial,
+                        fontSize: size.width * .045,
+                        fontWeight: FontWeight.w800,
+                        color: _accent,
+                      ),
+                    )
+                  : AppText(
+                      _initial,
+                      fontSize: size.width * .045,
+                      fontWeight: FontWeight.w800,
+                      color: _accent,
+                    ),
             ),
           ),
 

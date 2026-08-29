@@ -19,7 +19,7 @@ class ChangePlanCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
-        color: isDark ? const Color(0xFF1C1F26) : Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         border: Border.all(color: isDark ? Colors.white.withOpacity(.07) : Colors.black.withOpacity(.06)),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(isDark ? .3 : .05), blurRadius: 20, offset: const Offset(0, 8)),

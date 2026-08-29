@@ -6,11 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:vclub/API/Socket/Models/ScanPointsAddedEvent.dart';
+import 'package:vclub/API/Socket/Models/ScanRewardValidatedEvent.dart';
+import 'package:vclub/API/SocketService.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
 import 'package:vclub/Configs/Theme/theme_service.dart';
+import 'package:vclub/Features/Client/Cards/Controllers/ClientCradsController.dart';
 import 'package:vclub/Features/Client/Dashboard/Controllers/ClientDashboardController.dart'; // adjust path
 import 'package:vclub/Features/Client/Dashboard/Models/ClientCardTokenModel.dart';
 import 'package:vclub/Features/Client/Dashboard/Models/ClientCardsModel.dart';
+import 'package:vclub/Features/Client/Dashboard/Models/Client_Reward_Model.dart';
 import 'package:vclub/Features/Client/Dashboard/View/Widgets/AppShimmer.dart'; // adjust path
 import 'package:vclub/Features/Client/Dashboard/View/Widgets/QrScanCard.dart';
 import 'package:vclub/Features/Client/QRScanner/View/QrScanner.dart';
@@ -75,7 +80,10 @@ class MyCardsTab extends StatelessWidget {
           ...cards.map(
             (c) => Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: LoyaltyCardView(card: c, ontap:  () => showCardQrDialog(context, card: c),),
+              child: LoyaltyCardView(
+                card: c,
+                ontap: () => showCardQrDialog(context, card: c),
+              ),
             ),
           ),
 
@@ -117,7 +125,8 @@ double _safeProgress(num value, num target) {
   return (value / target).clamp(0.0, 1.0).toDouble();
 }
 
-String _percentText(double progress) => '${(progress * 100).toStringAsFixed(0)}%';
+String _percentText(double progress) =>
+    '${(progress * 100).toStringAsFixed(0)}%';
 
 // =========================
 // REAL CARD
@@ -220,7 +229,11 @@ class LoyaltyCardView extends StatelessWidget {
                   _CardFooter(card: card, accent: accent),
                   if (card.cardCompleted) ...[
                     SizedBox(height: size.height * 0.016),
-                     _ClaimRewardButton(accent: accent, card: card, onTap: onClaimReward),
+                    _ClaimRewardButton(
+                      accent: accent,
+                      card: card,
+                      onTap: onClaimReward,
+                    ),
                   ],
                 ],
               ),
@@ -289,7 +302,11 @@ class _ClaimRewardButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Iconsax.gift_copy, size: size.width * 0.045, color: Colors.white),
+              Icon(
+                Iconsax.gift_copy,
+                size: size.width * 0.045,
+                color: Colors.white,
+              ),
               SizedBox(width: size.width * 0.02),
               AppText(
                 'claim_reward_client'.tr,
@@ -304,7 +321,6 @@ class _ClaimRewardButton extends StatelessWidget {
     );
   }
 }
-
 
 /// Shows a premium, responsive dialog with a QR code encoding the card's id,
 /// so the merchant can scan it to validate the loyalty reward.
@@ -332,20 +348,89 @@ void showLoyaltyRewardQrDialog(
     },
   );
 }
-// qr dialog 
-class _LoyaltyRewardQrDialog extends StatelessWidget {
+
+// qr dialog
+class _LoyaltyRewardQrDialog extends StatefulWidget {
   final ClientCardModel card;
   final Color accent;
 
   const _LoyaltyRewardQrDialog({required this.card, required this.accent});
 
   @override
+  State<_LoyaltyRewardQrDialog> createState() => _LoyaltyRewardQrDialogState();
+}
+class _LoyaltyRewardQrDialogState extends State<_LoyaltyRewardQrDialog> {
+  final _dashboard = ClientDashboardController.to;
+  final controller = ClientCardsController.to;
+  bool _loading = true;
+  RewardModel? _reward;
+
+  StreamSubscription<Map<String, dynamic>>? _socketSub;
+  bool _validated = false;
+  ScanRewardValidatedEvent? _validatedEvent;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReward();
+    _socketSub = SocketService.to.onRewardValidated.listen(_onRewardValidated);
+  }
+
+  @override
+  void dispose() {
+    _socketSub?.cancel();
+    super.dispose();
+  }
+
+  void _onRewardValidated(Map<String, dynamic> data) {
+    if (!mounted) return;
+
+    final event = ScanRewardValidatedEvent.fromJson(data);
+
+    // Match on company + code — code is the specific reward coupon shown
+    // in this exact dialog, so this avoids reacting to a different reward
+    // validated elsewhere for the same company.
+    if (event.companyId != widget.card.company.id) return;
+    if (_reward != null && event.code != _reward!.code) return;
+
+    setState(() {
+      _validated = true;
+      _validatedEvent = event;
+    });
+
+    // Refresh dashboard data (rewards list, cards, stats) in the background.
+    _dashboard.fetchDashboardData();
+    controller.fetchCards();
+    Future.delayed(const Duration(seconds: 6), () {
+      if (mounted) Navigator.of(context).pop();
+    });
+  }
+
+  Future<void> _loadReward() async {
+    setState(() => _loading = true);
+
+    await _dashboard.fetchRewards();
+
+    final match = _dashboard.rewards.cast<RewardModel>().firstWhereOrNull(
+      (r) =>
+          r.membershipId == widget.card.id &&
+          r.company.id == widget.card.company.id &&
+          r.validatedBy == null,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _reward = match;
+      _loading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isDark = Get.find<ThemeService>().isDarkMode.value;
+    final accent = widget.accent;
 
-    // Cap the dialog width on large/tablet screens, but stay responsive
-    // (86% of screen width) on phones.
     final dialogWidth = size.width < 480 ? size.width * 0.86 : 380.0;
 
     return Center(
@@ -427,58 +512,30 @@ class _LoyaltyRewardQrDialog extends StatelessWidget {
                 ),
               ),
 
-              // ---------- QR code ----------
+              // ---------- Body ----------
               Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: size.width * 0.06,
                   vertical: size.height * 0.03,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(size.width * 0.035),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: accent.withOpacity(0.25), width: 1.4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accent.withOpacity(0.15),
-                            blurRadius: 18,
-                            spreadRadius: -4,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: QrImageView(
-                        data: card.id,
-                        version: QrVersions.auto,
-                        size: dialogWidth * 0.56,
-                        backgroundColor: Colors.white,
-                        eyeStyle: QrEyeStyle(
-                          eyeShape: QrEyeShape.square,
-                          color: Color.lerp(accent, Colors.black, 0.35)!,
-                        ),
-                        dataModuleStyle: QrDataModuleStyle(
-                          dataModuleShape: QrDataModuleShape.square,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: size.height * 0.022),
-
-                    // ---------- Bottom instruction text ----------
-                    AppText(
-                      'claim_reward_instructions_client'.tr,
-                      fontSize: size.width * 0.033,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                child: _validated
+                    ? _RewardValidatedSuccessState(
+                        size: size,
+                        accent: accent,
+                        event: _validatedEvent!,
+                        onClose: () => Navigator.of(context).pop(),
+                      )
+                    : (_loading
+                        ? _LoadingState(size: size, accent: accent)
+                        : _reward == null
+                            ? _NoRewardState(size: size, isDark: isDark)
+                            : _RewardQrContent(
+                                reward: _reward!,
+                                size: size,
+                                dialogWidth: dialogWidth,
+                                accent: accent,
+                                isDark: isDark,
+                              )),
               ),
             ],
           ),
@@ -487,9 +544,398 @@ class _LoyaltyRewardQrDialog extends StatelessWidget {
     );
   }
 }
+class _RewardValidatedSuccessState extends StatefulWidget {
+  final Size size;
+  final Color accent;
+  final ScanRewardValidatedEvent event;
+  final VoidCallback onClose;
 
- // loyalty card dialog 
- 
+  const _RewardValidatedSuccessState({
+    required this.size,
+    required this.accent,
+    required this.event,
+    required this.onClose,
+  });
+
+  @override
+  State<_RewardValidatedSuccessState> createState() =>
+      _RewardValidatedSuccessStateState();
+}
+
+class _RewardValidatedSuccessStateState
+    extends State<_RewardValidatedSuccessState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _badgeScale;
+  late final Animation<double> _ringScale;
+  late final Animation<double> _ringOpacity;
+  late final Animation<double> _fadeIn;
+  late final Animation<Offset> _slideUp;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _badgeScale = TweenSequence([
+      TweenSequenceItem(
+        tween: Tween(begin: 0.3, end: 1.15)
+            .chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 65,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.15, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 35,
+      ),
+    ]).animate(_ctrl);
+
+    _ringScale = Tween(begin: 0.6, end: 1.8).animate(
+      CurvedAnimation(parent: _ctrl, curve: const Interval(0.0, 0.7, curve: Curves.easeOut)),
+    );
+    _ringOpacity = Tween(begin: 0.35, end: 0.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: const Interval(0.0, 0.7, curve: Curves.easeOut)),
+    );
+
+    _fadeIn = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.35, 1.0, curve: Curves.easeOut),
+    );
+    _slideUp = Tween(begin: const Offset(0, 0.12), end: Offset.zero).animate(_fadeIn);
+
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = widget.size;
+    final accent = widget.accent;
+    final event = widget.event;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Animated badge with expanding ring pulse ──
+        SizedBox(
+          width: size.width * 0.32,
+          height: size.width * 0.32,
+          child: AnimatedBuilder(
+            animation: _ctrl,
+            builder: (context, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  Opacity(
+                    opacity: _ringOpacity.value,
+                    child: Transform.scale(
+                      scale: _ringScale.value,
+                      child: Container(
+                        width: size.width * 0.22,
+                        height: size.width * 0.22,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: accent, width: 2),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Transform.scale(
+                    scale: _badgeScale.value,
+                    child: Container(
+                      width: size.width * 0.22,
+                      height: size.width * 0.22,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [accent, Color.lerp(accent, Colors.black, 0.2)!],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: accent.withOpacity(0.45),
+                            blurRadius: 24,
+                            spreadRadius: -2,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Iconsax.medal_star_copy,
+                        color: Colors.white,
+                        size: size.width * 0.11,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+
+        SizedBox(height: size.height * 0.02),
+
+        FadeTransition(
+          opacity: _fadeIn,
+          child: SlideTransition(
+            position: _slideUp,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppText(
+                  'reward_validated_title_client'.tr,
+                  fontSize: size.width * 0.048,
+                  fontWeight: FontWeight.w800,
+                ),
+                SizedBox(height: size.height * 0.016),
+
+                // ── Reward name pill ──
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: size.width * 0.05,
+                    vertical: size.height * 0.014,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: [accent.withOpacity(0.14), accent.withOpacity(0.05)],
+                    ),
+                    border: Border.all(color: accent.withOpacity(0.3), width: 1.2),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Iconsax.gift, color: accent, size: size.width * 0.05),
+                      SizedBox(width: size.width * 0.02),
+                      Flexible(
+                        child: AppText(
+                          event.rewardName,
+                          fontSize: size.width * 0.045,
+                          fontWeight: FontWeight.w800,
+                          color: accent,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: size.height * 0.014),
+                AppText(
+                  'reward_validated_subtitle_client'.tr,
+                  fontSize: size.width * 0.034,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade600,
+                  textAlign: TextAlign.center,
+                ),
+
+                // ── Done button ──
+                SizedBox(height: size.height * 0.026),
+                _DoneButtonReward(accent: accent, onTap: widget.onClose, size: size),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DoneButtonReward extends StatelessWidget {
+  final Color accent;
+  final VoidCallback onTap;
+  final Size size;
+
+  const _DoneButtonReward({
+    required this.accent,
+    required this.onTap,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: size.height * 0.015),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [accent, Color.lerp(accent, Colors.black, 0.18)!],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withOpacity(0.35),
+                blurRadius: 16,
+                spreadRadius: -4,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Iconsax.tick_square, size: size.width * 0.042, color: Colors.white),
+              SizedBox(width: size.width * 0.02),
+              AppText(
+                'scan_done_client'.tr,
+                fontSize: size.width * 0.038,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+class _LoadingState extends StatelessWidget {
+  final Size size;
+  final Color accent;
+
+  const _LoadingState({required this.size, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: size.height * 0.22,
+      child: Center(
+        child: CircularProgressIndicator(color: accent, strokeWidth: 2.5),
+      ),
+    );
+  }
+}
+
+class _NoRewardState extends StatelessWidget {
+  final Size size;
+  final bool isDark;
+
+  const _NoRewardState({required this.size, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Iconsax.gift,
+          size: size.width * 0.12,
+          color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+        ),
+        SizedBox(height: size.height * 0.015),
+        AppText(
+          'no_reward_available_client'.tr,
+          fontSize: size.width * 0.035,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _RewardQrContent extends StatelessWidget {
+  final RewardModel reward;
+  final Size size;
+  final double dialogWidth;
+  final Color accent;
+  final bool isDark;
+
+  const _RewardQrContent({
+    required this.reward,
+    required this.size,
+    required this.dialogWidth,
+    required this.accent,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: EdgeInsets.all(size.width * 0.035),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: accent.withOpacity(0.25), width: 1.4),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withOpacity(0.15),
+                blurRadius: 18,
+                spreadRadius: -4,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: QrImageView(
+            data: reward.code,
+            version: QrVersions.auto,
+            size: dialogWidth * 0.56,
+            backgroundColor: Colors.white,
+            eyeStyle: QrEyeStyle(
+              eyeShape: QrEyeShape.square,
+              color: Color.lerp(accent, Colors.black, 0.35)!,
+            ),
+            dataModuleStyle: const QrDataModuleStyle(
+              dataModuleShape: QrDataModuleShape.square,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        SizedBox(height: size.height * 0.018),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.04,
+            vertical: size.height * 0.008,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: isDark
+                ? Colors.white.withOpacity(0.06)
+                : Colors.grey.withOpacity(0.08),
+          ),
+          child: AppText(
+            reward.code,
+            fontSize: size.width * 0.04,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
+          ),
+        ),
+        SizedBox(height: size.height * 0.02),
+        AppText(
+          'claim_reward_instructions_client'.tr,
+          fontSize: size.width * 0.033,
+          fontWeight: FontWeight.w500,
+          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+// loyalty card dialog
 
 /// Shows a premium, responsive dialog with a live QR token for the given
 /// card, a countdown until expiration, and a refresh action to regenerate
@@ -525,23 +971,49 @@ class _CardQrDialog extends StatefulWidget {
 
 class _CardQrDialogState extends State<_CardQrDialog> {
   final controller = Get.find<ClientDashboardController>();
-
+  final cardcontroller = ClientCardsController.to;
   ClientCardQrModel? _qr;
   bool _loading = true;
   bool _refreshing = false;
   Timer? _timer;
   int _secondsLeft = 0;
 
+  StreamSubscription<Map<String, dynamic>>? _socketSub;
+  bool _scanSuccess = false;
+  ScanPointsAddedEvent? _scanEvent;
+
   @override
   void initState() {
     super.initState();
     _loadQr();
+    _socketSub = SocketService.to.onPointsAdded.listen(_onPointsAdded);
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _socketSub?.cancel();
     super.dispose();
+  }
+
+  void _onPointsAdded(Map<String, dynamic> data) {
+    if (!mounted) return;
+
+    final event = ScanPointsAddedEvent.fromJson(data);
+    if (event.companyId != widget.card.company.id) return;
+
+    _timer?.cancel();
+
+    setState(() {
+      _scanSuccess = true;
+      _scanEvent = event;
+    });
+
+    controller.fetchDashboardData();
+    cardcontroller.fetchCards();
+    Future.delayed(const Duration(seconds: 6), () {
+      if (mounted) Navigator.of(context).pop();
+    });
   }
 
   Future<void> _loadQr({bool isRefresh = false}) async {
@@ -713,77 +1185,103 @@ class _CardQrDialogState extends State<_CardQrDialog> {
                     SizedBox(
                       width: dialogWidth * 0.8,
                       height: dialogWidth * 0.8,
-                      child: _loading
-                          ? Center(
-                              child: LoadingAnimationWidget.fourRotatingDots(
-                                color: accent,
-                                size: 32,
-                              ),
+                      child: _scanSuccess
+                          ? _ScanSuccessState(
+                              size: size,
+                              accent: accent,
+                              event: _scanEvent!,
+                              onClose: () => Navigator.of(context).pop(),
                             )
-                          : (_qr == null)
-                              ? Icon(Iconsax.warning_2,
-                                  color: Colors.grey.shade400, size: size.width * 0.12)
-                              : Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Container(
-                                      padding: EdgeInsets.all(size.width * 0.035),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                            color: accent.withOpacity(0.25), width: 1.4),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: accent.withOpacity(0.15),
-                                            blurRadius: 18,
-                                            spreadRadius: -4,
-                                            offset: const Offset(0, 8),
-                                          ),
-                                        ],
-                                      ),
-                                      child: QrImageView(
-                                        data: _qr!.qrToken,
-                                        version: QrVersions.auto,
-                                        size: dialogWidth * 0.65,
-                                        backgroundColor: Colors.white,
-                                        eyeStyle: QrEyeStyle(
-                                          eyeShape: QrEyeShape.square,
-                                          color: Color.lerp(accent, Colors.black, 0.35)!,
+                          : (_loading
+                                ? Center(
+                                    child:
+                                        LoadingAnimationWidget.fourRotatingDots(
+                                          color: accent,
+                                          size: 32,
                                         ),
-                                        dataModuleStyle: QrDataModuleStyle(
-                                          dataModuleShape: QrDataModuleShape.square,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                    // Dim + overlay once expired.
-                                    if (_expired)
+                                  )
+                                : (_qr == null)
+                                ? Icon(
+                                    Iconsax.warning_2,
+                                    color: Colors.grey.shade400,
+                                    size: size.width * 0.12,
+                                  )
+                                : Stack(
+                                    alignment: Alignment.center,
+                                    children: [
                                       Container(
-                                        width: dialogWidth * 0.62,
-                                        height: dialogWidth * 0.62,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.55),
-                                          borderRadius: BorderRadius.circular(20),
+                                        padding: EdgeInsets.all(
+                                          size.width * 0.035,
                                         ),
-                                        child: Center(
-                                          child: AppText(
-                                            'qr_expired_client'.tr,
-                                            fontSize: size.width * 0.033,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
-                                            textAlign: TextAlign.center,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                          border: Border.all(
+                                            color: accent.withOpacity(0.25),
+                                            width: 1.4,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: accent.withOpacity(0.15),
+                                              blurRadius: 18,
+                                              spreadRadius: -4,
+                                              offset: const Offset(0, 8),
+                                            ),
+                                          ],
+                                        ),
+                                        child: QrImageView(
+                                          data: _qr!.qrToken,
+                                          version: QrVersions.auto,
+                                          size: dialogWidth * 0.65,
+                                          backgroundColor: Colors.white,
+                                          eyeStyle: QrEyeStyle(
+                                            eyeShape: QrEyeShape.square,
+                                            color: Color.lerp(
+                                              accent,
+                                              Colors.black,
+                                              0.35,
+                                            )!,
+                                          ),
+                                          dataModuleStyle: QrDataModuleStyle(
+                                            dataModuleShape:
+                                                QrDataModuleShape.square,
+                                            color: Colors.black87,
                                           ),
                                         ),
                                       ),
-                                  ],
-                                ),
+                                      // Dim + overlay once expired.
+                                      if (_expired)
+                                        Container(
+                                          width: dialogWidth * 0.62,
+                                          height: dialogWidth * 0.62,
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(
+                                              0.55,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: AppText(
+                                              'qr_expired_client'.tr,
+                                              fontSize: size.width * 0.033,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  )),
                     ),
 
                     SizedBox(height: size.height * 0.02),
 
                     // ---------- Timer + refresh ----------
-                    if (!_loading && _qr != null)
+                    if (!_scanSuccess && !_loading && _qr != null)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -792,20 +1290,28 @@ class _CardQrDialogState extends State<_CardQrDialog> {
                             size: size.width * 0.045,
                             color: _expired
                                 ? Colors.redAccent
-                                : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                                : (isDark
+                                      ? Colors.grey.shade400
+                                      : Colors.grey.shade600),
                           ),
                           SizedBox(width: size.width * 0.018),
                           AppText(
-                            _expired ? 'qr_expired_client'.tr : _formattedCountdown,
+                            _expired
+                                ? 'qr_expired_client'.tr
+                                : _formattedCountdown,
                             fontSize: size.width * 0.037,
                             fontWeight: FontWeight.w700,
                             color: _expired
                                 ? Colors.redAccent
-                                : (isDark ? Colors.grey.shade300 : Colors.grey.shade700),
+                                : (isDark
+                                      ? Colors.grey.shade300
+                                      : Colors.grey.shade700),
                           ),
                           SizedBox(width: size.width * 0.03),
                           InkWell(
-                            onTap: _refreshing ? null : () => _loadQr(isRefresh: true),
+                            onTap: _refreshing
+                                ? null
+                                : () => _loadQr(isRefresh: true),
                             borderRadius: BorderRadius.circular(30),
                             child: Container(
                               padding: EdgeInsets.all(size.width * 0.02),
@@ -822,7 +1328,11 @@ class _CardQrDialogState extends State<_CardQrDialog> {
                                         color: accent,
                                       ),
                                     )
-                                  : Icon(Iconsax.refresh, size: size.width * 0.042, color: accent),
+                                  : Icon(
+                                      Iconsax.refresh,
+                                      size: size.width * 0.042,
+                                      color: accent,
+                                    ),
                             ),
                           ),
                         ],
@@ -831,13 +1341,16 @@ class _CardQrDialogState extends State<_CardQrDialog> {
                     SizedBox(height: size.height * 0.022),
 
                     // ---------- Bottom instruction text ----------
-                    AppText(
-                      'card_qr_instructions_client'.tr,
-                      fontSize: size.width * 0.033,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                      textAlign: TextAlign.center,
-                    ),
+                    if (!_scanSuccess)
+                      AppText(
+                        'card_qr_instructions_client'.tr,
+                        fontSize: size.width * 0.033,
+                        fontWeight: FontWeight.w500,
+                        color: isDark
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade600,
+                        textAlign: TextAlign.center,
+                      ),
                   ],
                 ),
               ),
@@ -849,6 +1362,385 @@ class _CardQrDialogState extends State<_CardQrDialog> {
   }
 }
 
+class _ScanSuccessState extends StatefulWidget {
+  final Size size;
+  final Color accent;
+  final ScanPointsAddedEvent event;
+  final VoidCallback onClose;
+
+  const _ScanSuccessState({
+    required this.size,
+    required this.accent,
+    required this.event,
+    required this.onClose,
+  });
+
+  @override
+  State<_ScanSuccessState> createState() => _ScanSuccessStateState();
+}
+
+class _ScanSuccessStateState extends State<_ScanSuccessState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _badgeScale;
+  late final Animation<double> _ringScale;
+  late final Animation<double> _ringOpacity;
+  late final Animation<double> _fadeIn;
+  late final Animation<Offset> _slideUp;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _badgeScale = TweenSequence([
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.3,
+          end: 1.15,
+        ).chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 65,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.15,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 35,
+      ),
+    ]).animate(_ctrl);
+
+    _ringScale = Tween(begin: 0.6, end: 1.8).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+      ),
+    );
+    _ringOpacity = Tween(begin: 0.35, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+      ),
+    );
+
+    _fadeIn = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.35, 1.0, curve: Curves.easeOut),
+    );
+    _slideUp = Tween(
+      begin: const Offset(0, 0.12),
+      end: Offset.zero,
+    ).animate(_fadeIn);
+
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  String get _label {
+    switch (widget.event.action) {
+      case 'add_stamp':
+        return 'scan_stamp_label_client'.tr;
+      case 'cashback':
+        return 'scan_cashback_label_client'.tr;
+      case 'add_points':
+      default:
+        return 'scan_points_label_client'.tr;
+    }
+  }
+
+  String get _amountText {
+    final isCashback = widget.event.action == 'cashback';
+    final raw = widget.event.awarded;
+    final formatted = raw is int ? '$raw' : raw.toStringAsFixed(2);
+    return isCashback ? '+$formatted€' : '+$formatted';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = widget.size;
+    final accent = widget.accent;
+    final event = widget.event;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Animated badge with expanding ring pulse ──
+        SizedBox(
+          width: size.width * 0.32,
+          height: size.width * 0.32,
+          child: AnimatedBuilder(
+            animation: _ctrl,
+            builder: (context, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  Opacity(
+                    opacity: _ringOpacity.value,
+                    child: Transform.scale(
+                      scale: _ringScale.value,
+                      child: Container(
+                        width: size.width * 0.2,
+                        height: size.width * 0.2,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: accent, width: 2),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Transform.scale(
+                    scale: _badgeScale.value,
+                    child: Container(
+                      width: size.width * 0.2,
+                      height: size.width * 0.2,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            accent,
+                            Color.lerp(accent, Colors.black, 0.2)!,
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: accent.withOpacity(0.45),
+                            blurRadius: 24,
+                            spreadRadius: -2,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Iconsax.tick_circle,
+                        color: Colors.white,
+                        size: size.width * 0.11,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+
+        SizedBox(height: size.height * 0.01),
+
+        FadeTransition(
+          opacity: _fadeIn,
+          child: SlideTransition(
+            position: _slideUp,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppText(
+                  'scan_success_title_client'.tr,
+                  fontSize: size.width * 0.048,
+                  fontWeight: FontWeight.w800,
+                ),
+                SizedBox(height: size.height * 0.014),
+
+                // ── Big amount reveal, pill container ──
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: size.width * 0.05,
+                    vertical: size.height * 0.01,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    gradient: LinearGradient(
+                      colors: [
+                        accent.withOpacity(0.14),
+                        accent.withOpacity(0.05),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: accent.withOpacity(0.3),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: [accent, accent.withOpacity(0.7)],
+                        ).createShader(bounds),
+                        child: AppText(
+                          _amountText,
+                          fontSize: size.width * 0.06,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: size.width * 0.015),
+                      AppText(
+                        _label,
+                        fontSize: size.width * 0.03,
+                        fontWeight: FontWeight.w700,
+                        color: accent,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Reward / card-completed banner ──
+                if (event.earnedReward != null) ...[
+                  SizedBox(height: size.height * 0.02),
+                  _CelebrationBanner(
+                    icon: Iconsax.gift,
+                    text: 'scan_reward_earned_client'.tr,
+                    accent: accent,
+                    size: size,
+                  ),
+                ] else if (event.cardCompleted) ...[
+                  SizedBox(height: size.height * 0.02),
+                  _CelebrationBanner(
+                    icon: Iconsax.medal_star,
+                    text: 'scan_card_completed_client'.tr,
+                    accent: accent,
+                    size: size,
+                  ),
+                ],
+
+                // ── Done button ──
+                SizedBox(height: size.height * 0.02),
+                _DoneButton(accent: accent, onTap: widget.onClose, size: size),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Premium pill "Done" button with a subtle glow — closes the dialog
+/// immediately, mirroring the auto-close behavior.
+class _DoneButton extends StatelessWidget {
+  final Color accent;
+  final VoidCallback onTap;
+  final Size size;
+
+  const _DoneButton({
+    required this.accent,
+    required this.onTap,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: size.height * 0.014),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [accent, Color.lerp(accent, Colors.black, 0.18)!],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withOpacity(0.35),
+                blurRadius: 16,
+                spreadRadius: -4,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Iconsax.tick_circle_copy,
+                size: size.width * 0.042,
+                color: Colors.white,
+              ),
+              SizedBox(width: size.width * 0.02),
+              AppText(
+                'scan_done_client'.tr,
+                fontSize: size.width * 0.038,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CelebrationBanner extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color accent;
+  final Size size;
+
+  const _CelebrationBanner({
+    required this.icon,
+    required this.text,
+    required this.accent,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.035,
+        vertical: size.height * 0.01,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [accent, Color.lerp(accent, Colors.white, 0.18)!],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withOpacity(0.35),
+            blurRadius: 14,
+            spreadRadius: -4,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.white, size: size.width * 0.03),
+          SizedBox(width: size.width * 0.02),
+          Flexible(
+            child: AppText(
+              text,
+              fontSize: size.width * 0.028,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 // =========================
 // HEADER — company branding + program name + visits + reward-ready chip
@@ -1347,12 +2239,7 @@ class _ShimmerLoyaltyCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                ShimmerBlock(
-                  width: 40,
-                  height: 20,
-                  radius: 20,
-                  isDark: isDark,
-                ),
+                ShimmerBlock(width: 40, height: 20, radius: 20, isDark: isDark),
               ],
             ),
             SizedBox(height: size.height * 0.02),
@@ -1398,9 +2285,7 @@ class _CardsErrorState extends StatelessWidget {
         color: isDark
             ? Colors.white.withOpacity(0.06)
             : Colors.white.withOpacity(0.78),
-        border: Border.all(
-          color: isDark ? Colors.white12 : Colors.black12,
-        ),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
       ),
       child: Column(
         children: [
@@ -1452,11 +2337,7 @@ class _CardsEmptyState extends StatelessWidget {
             size: 30,
           ),
           const SizedBox(height: 8),
-          AppText(
-            'no_cards_client'.tr,
-            fontSize: 13,
-            color: Colors.grey,
-          ),
+          AppText('no_cards_client'.tr, fontSize: 13, color: Colors.grey),
         ],
       ),
     );

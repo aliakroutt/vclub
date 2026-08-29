@@ -14,7 +14,7 @@ class AuditErrorState extends StatelessWidget {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 60, 24, 120),
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 140),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

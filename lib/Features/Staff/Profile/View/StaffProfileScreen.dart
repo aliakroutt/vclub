@@ -108,28 +108,13 @@ class _AgentProfileCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [const Color(0xFF1C1C22), const Color(0xFF17171B)]
-                : [Colors.white, const Color(0xFFFCFBFF)],
-          ),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: AppColors.primary.withOpacity(isDark ? .18 : .12)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(isDark ? .1 : .06),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? .25 : .03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+        borderRadius: BorderRadius.circular(24),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.05)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(isDark ? .22 : .04), blurRadius: 16, offset: const Offset(0, 4)),
+        ],
+      ),
         child: Column(
           children: [
            Row(

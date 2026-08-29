@@ -33,4 +33,17 @@ class FortuneWheelHomeController extends GetxController {
   }
 
   Future<void> refresh() => fetchWheelConfig();
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears the wheel config back to initial values. Call this on logout
+  /// so the next fetch starts clean and doesn't briefly flash a previous
+  /// merchant's wheel configuration.
+  void resetControllerData() {
+    loading.value = false;
+    initialLoaded.value = false;
+    error.value = "";
+    config.value = null;
+  }
 }

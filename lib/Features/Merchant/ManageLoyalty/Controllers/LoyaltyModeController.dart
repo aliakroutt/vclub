@@ -112,13 +112,13 @@ class LoyaltyModeController extends GetxController {
     fetchRewardsForPicker();
 
     // Sensible defaults matching your sample payload
-    if (bonusRules.isEmpty) {
-      bonusRules.addAll([
-        BonusRule(type: "birthday", points: 100, enabled: true),
-        BonusRule(type: "first_purchase", points: 200, enabled: true),
-        BonusRule(type: "multiplier", points: 2, enabled: false),
-      ]);
-    }
+    // if (bonusRules.isEmpty) {
+    //   bonusRules.addAll([
+    //     BonusRule(type: "birthday", points: 100, enabled: true),
+    //     BonusRule(type: "first_purchase", points: 200, enabled: true),
+    //     BonusRule(type: "multiplier", points: 2, enabled: false),
+    //   ]);
+    // }
   }
 
   int _parseInt(TextEditingController c, [int fallback = 0]) =>

@@ -53,13 +53,13 @@ class CardModeFilterTabs extends StatelessWidget {
     final controller = ClientCardsController.to;
 
     return SizedBox(
-      height: 42,
+      height: 34, // was 42
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 2),
         itemCount: _modes.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, __) => const SizedBox(width: 8), // was 10
         itemBuilder: (context, index) {
           final mode = _modes[index];
           return _FilterChip(
@@ -107,9 +107,9 @@ class _FilterChip extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6), // was 14/9
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14), // was 16
               gradient: isActive
                   ? LinearGradient(
                       colors: [color, Color.lerp(color, Colors.black, 0.15)!],
@@ -126,15 +126,15 @@ class _FilterChip extends StatelessWidget {
                     : (isDark
                         ? Colors.white.withOpacity(0.08)
                         : Colors.black.withOpacity(0.07)),
-                width: 1.2,
+                width: 1,
               ),
               boxShadow: isActive
                   ? [
                       BoxShadow(
                         color: color.withOpacity(0.35),
-                        blurRadius: 14,
+                        blurRadius: 10,
                         spreadRadius: -3,
-                        offset: const Offset(0, 6),
+                        offset: const Offset(0, 4),
                       ),
                     ]
                   : [],
@@ -144,29 +144,28 @@ class _FilterChip extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  size: 15,
+                  size: 12.5, // was 15
                   color: isActive
                       ? Colors.white
                       : theme.textTheme.bodySmall?.color?.withOpacity(0.6),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 5), // was 6
                 AppText(
                   label,
-                  fontSize: 12.5,
+                  fontSize: 11, // was 12.5
                   fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
                   color: isActive
                       ? Colors.white
                       : theme.textTheme.bodySmall?.color?.withOpacity(0.75),
                 ),
                 if (count > 0) ...[
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 4), // was 5
                   AppText(
-                      "$count",
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: isActive ? Colors.white : color,
-                    ),
-                
+                    "$count",
+                    fontSize: 9, // was 10
+                    fontWeight: FontWeight.w700,
+                    color: isActive ? Colors.white : color,
+                  ),
                 ],
               ],
             ),

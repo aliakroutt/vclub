@@ -12,12 +12,18 @@ class ClientCard extends StatelessWidget {
 
   Color _levelColor() {
     switch (client.level.toLowerCase()) {
-      case "bronze":   return const Color(0xFFB87333);
-      case "silver":   return const Color(0xFF8F98A3);
-      case "gold":     return const Color(0xFFE8B200);
-      case "platinum": return const Color(0xFF5B7FFF);
-      case "vip":      return const Color(0xFF8E24AA);
-      default:         return AppColors.primary;
+      case "bronze":
+        return const Color(0xFFB87333);
+      case "silver":
+        return const Color(0xFF8F98A3);
+      case "gold":
+        return const Color(0xFFE8B200);
+      case "platinum":
+        return const Color(0xFF5B7FFF);
+      case "vip":
+        return const Color(0xFF8E24AA);
+      default:
+        return AppColors.primary;
     }
   }
 
@@ -25,10 +31,18 @@ class ClientCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final cardColor   = isDark ? const Color(0xFF18181B) : Colors.white;
-    final borderColor = isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.05);
-    final mutedColor  = Theme.of(context).textTheme.bodySmall?.color?.withOpacity(.5);
-    final levelColor  = _levelColor();
+    final cardColor = isDark ? const Color(0xFF18181B) : Colors.white;
+    final borderColor = isDark
+        ? Colors.white.withOpacity(.06)
+        : Colors.black.withOpacity(.05);
+    final mutedColor = Theme.of(
+      context,
+    ).textTheme.bodySmall?.color?.withOpacity(.5);
+    final levelColor = _levelColor();
+   ImageProvider? decodeAvatar(String? avatar) {
+  if (avatar == null || avatar.isEmpty) return null;
+  return NetworkImage(avatar);
+}
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -40,30 +54,45 @@ class ClientCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-             color: Theme.of(context).colorScheme.surface,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: borderColor, width: .5),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
                 /// HEADER
                 Row(
                   children: [
                     // Avatar
-                    Container(
-                      width: 42, height: 42,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
+                    // Avatar
+                    // Avatar
+                    // Avatar
+                    ClipOval(
+                      child: Container(
+                        width: 42,
+                        height: 42,
                         color: AppColors.primary.withOpacity(.10),
-                      ),
-                      alignment: Alignment.center,
-                      child: AppText(
-                        client.initials,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        alignment: Alignment.center,
+                        child: decodeAvatar(client.avatar) != null
+                            ? Image(
+                                image: decodeAvatar(client.avatar)!,
+                                width: 42,
+                                height: 42,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => AppText(
+                                  client.initials,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
+                                ),
+                              )
+                            : AppText(
+                                client.initials,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                              ),
                       ),
                     ),
 
@@ -80,9 +109,17 @@ class ClientCard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                           const SizedBox(height: 3),
-                          _MetaRow(icon: Iconsax.sms, label: client.email, color: mutedColor),
+                          _MetaRow(
+                            icon: Iconsax.sms,
+                            label: client.email,
+                            color: mutedColor,
+                          ),
                           const SizedBox(height: 2),
-                          _MetaRow(icon: Iconsax.call, label: client.phone, color: mutedColor),
+                          _MetaRow(
+                            icon: Iconsax.call,
+                            label: client.phone,
+                            color: mutedColor,
+                          ),
                         ],
                       ),
                     ),
@@ -91,7 +128,10 @@ class ClientCard extends StatelessWidget {
 
                     // Level badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: levelColor.withOpacity(.10),
                         borderRadius: BorderRadius.circular(20),
@@ -114,15 +154,26 @@ class ClientCard extends StatelessWidget {
                 IntrinsicHeight(
                   child: Row(
                     children: [
-                      _StatItem(icon: Iconsax.coin, value: client.points.toString(), label: "points"),
+                      _StatItem(
+                        icon: Iconsax.coin,
+                        value: client.points.toString(),
+                        label: "points",
+                      ),
                       VerticalDivider(width: 1, color: borderColor),
-                      _StatItem(icon: Iconsax.scan, value: client.visits.toString(), label: "visits"),
+                      _StatItem(
+                        icon: Iconsax.scan,
+                        value: client.visits.toString(),
+                        label: "visits",
+                      ),
                       VerticalDivider(width: 1, color: borderColor),
-                      _StatItem(icon: Iconsax.gift, value: client.rewards.toString(), label: "rewards"),
+                      _StatItem(
+                        icon: Iconsax.gift,
+                        value: client.rewards.toString(),
+                        label: "rewards",
+                      ),
                     ],
                   ),
                 ),
-
               ],
             ),
           ),
@@ -164,7 +215,11 @@ class _StatItem extends StatelessWidget {
   final String value;
   final String label;
 
-  const _StatItem({required this.icon, required this.value, required this.label});
+  const _StatItem({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +233,9 @@ class _StatItem extends StatelessWidget {
           AppText(
             label,
             fontSize: 10.5,
-            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(.5),
+            color: Theme.of(
+              context,
+            ).textTheme.bodySmall?.color?.withOpacity(.5),
           ),
         ],
       ),

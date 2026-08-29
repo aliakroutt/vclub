@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:vclub/API/ApiClient.dart';
 import 'package:vclub/API/ApiRoutes.dart';
+import 'package:vclub/API/SocketService.dart';
 import 'package:vclub/Core/Storage/TokenStorage.dart';
 
 class ApiInterceptor extends Interceptor {
@@ -98,6 +99,7 @@ class ApiInterceptor extends Interceptor {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
       );
+      Get.find<SocketService>().updateToken(newAccessToken);
 
       for (final pending in _pendingRequests) {
         try {

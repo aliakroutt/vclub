@@ -50,6 +50,11 @@ class DashboardActions extends StatelessWidget {
             color: actions[i].color,
             onTap: () {
             if ( i == 0) {
+  //             PremiumSnackbar.show(
+  //   title: 'Test',
+  //   message: 'This is a test snackbar',
+  //   type: SnackType.success,
+  // );
               controller.selectIndex(5);
             } else if (i==1) {
               controller.selectIndex(2);

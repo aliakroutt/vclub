@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "192104838036",
+    "project_id": "vclub-c250f",
+    "storage_bucket": "vclub-c250f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192104838036:android:26316ed95eac7e6eab5581",
+        "android_client_info": {
+          "package_name": "com.vclub.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "192104838036-l9lqv6qsdplnaecu6qemejdc5qcsnimj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vclub.app",
+            "certificate_hash": "e1e21fcdd4288eb8acdd4f003aa97bb45cb45b65"
+          }
+        },
+        {
+          "client_id": "192104838036-adico52eophcvb476vj94ufretr7sgn2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzeoD1I6nW8wJppflDeeQGRPKnMel7xUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "192104838036-adico52eophcvb476vj94ufretr7sgn2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "192104838036-p5674ip7k8njehf664392cvlsop4js6r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.vclub.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

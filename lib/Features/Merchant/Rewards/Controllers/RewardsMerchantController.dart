@@ -6,6 +6,8 @@ import 'package:vclub/Features/Merchant/Dashboard/Models/RewardsMerchantModel.da
 import 'package:vclub/Features/Merchant/Rewards/Services/MerchantRewardsService.dart';
 
 class RewardsMerchantController extends GetxController {
+  static RewardsMerchantController get to => Get.find();
+
   final RxList<RewardModel> rewards = <RewardModel>[].obs;
   final RxBool rewardsLoading = false.obs;
   final RxString rewardsError = "".obs;
@@ -132,7 +134,7 @@ class RewardsMerchantController extends GetxController {
     } else if (data is String && data.isNotEmpty) {
       apiMessage = data;
     }
-    AppSnackBar.error(apiMessage ?? "reward_validate_failed".tr);
+    AppSnackBar.error(MerchantRewardsApiClient.humanizeError(apiMessage));
   } catch (e) {
     AppSnackBar.error("reward_validate_failed".tr);
   } finally {
@@ -149,5 +151,33 @@ class RewardsMerchantController extends GetxController {
     codeController.clear();
     newRewardNameController.clear();
    
+  }
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears rewards list, form fields, and all state flags back to initial
+  /// values. Call this on logout so the next fetch starts clean and
+  /// doesn't briefly flash a previous merchant's rewards.
+  void resetControllerData() {
+    rewards.clear();
+    rewardsLoading.value = false;
+    rewardsError.value = "";
+    initialLoaded.value = false;
+
+    isAddingReward.value = false;
+    isValidatingCode.value = false;
+    deletingRewardId.value = "";
+
+    codeController.clear();
+    newRewardNameController.clear();
+    newRewardType.value = "product";
+  }
+
+  @override
+  void onClose() {
+    codeController.dispose();
+    newRewardNameController.dispose();
+    super.onClose();
   }
 }

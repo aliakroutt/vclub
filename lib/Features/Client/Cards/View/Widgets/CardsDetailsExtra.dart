@@ -148,15 +148,15 @@ class LoyaltyQuickActionsRow extends StatelessWidget {
         ],
         onTap: onGoogleWallet ?? () => _comingSoon(context),
       ),
-      _ActionData(
-        icon: Iconsax.apple,
-        label: 'apple_wallet_action_client'.tr,
-        subtitle: 'apple_wallet_action_subtitle_client'.tr,
-        gradient: isDark
-            ? const [Color(0xFF3A3A3C), Color(0xFF1C1C1E)]
-            : const [Color(0xFF2C2C2E), Color(0xFF000000)],
-        onTap: onAppleWallet ?? () => _comingSoon(context),
-      ),
+      // _ActionData(
+      //   icon: Iconsax.apple,
+      //   label: 'apple_wallet_action_client'.tr,
+      //   subtitle: 'apple_wallet_action_subtitle_client'.tr,
+      //   gradient: isDark
+      //       ? const [Color(0xFF3A3A3C), Color(0xFF1C1C1E)]
+      //       : const [Color(0xFF2C2C2E), Color(0xFF000000)],
+      //   onTap: onAppleWallet ?? () => _comingSoon(context),
+      // ),
     ];
 
     return Column(

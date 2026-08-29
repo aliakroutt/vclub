@@ -21,7 +21,9 @@ class _MycardsState extends State<Mycards> {
   final controller = ClientCardsController.to;
   @override
   void initState() {
-    controller.fetchCards();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.fetchCards();
+    });
     super.initState();
   }
 

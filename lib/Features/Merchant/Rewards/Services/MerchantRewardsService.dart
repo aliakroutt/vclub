@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart' hide Response;
 import 'package:vclub/API/ApiClient.dart';
 import 'package:vclub/API/ApiRoutes.dart';
 import 'package:vclub/Features/Merchant/Dashboard/Models/RewardsMerchantModel.dart';
@@ -25,11 +26,7 @@ class MerchantRewardsApiClient {
   }) async {
     final Response response = await ApiClient.post(
       ApiRoutes.merchant_rewards,
-      data: {
-        "name": name,
-        "type": type,
-        "active": true,
-      },
+      data: {"name": name, "type": type, "active": true},
     );
 
     final data = response.data;
@@ -44,9 +41,10 @@ class MerchantRewardsApiClient {
     await ApiClient.delete("${ApiRoutes.merchant_rewards}/$id");
   }
 
-  static Future<Map<String, dynamic>> validateRewardByCode(String code) async {
-  final Response response = await ApiClient.get(
-    "${ApiRoutes.merchant_reddem_by_code}$code",
+ static Future<Map<String, dynamic>> validateRewardByCode(String code) async {
+  final response = await ApiClient.post(
+    ApiRoutes.scan_redeem,
+    data: {"code": code},
   );
 
   final data = response.data;
@@ -56,7 +54,7 @@ class MerchantRewardsApiClient {
     throw Exception("Invalid validate response");
   }
 
-  // Non-2xx: surface the API's own error message
+  // Non-2xx: surface the API's own error message, translated if it's an i18n key
   String? apiMessage;
   if (data is Map<String, dynamic>) {
     apiMessage = data["message"]?.toString() ?? data["error"]?.toString();
@@ -64,7 +62,18 @@ class MerchantRewardsApiClient {
     apiMessage = data;
   }
 
-  throw ApiException(apiMessage ?? "Request failed");
+  throw ApiException(humanizeError(apiMessage));
+}
+
+static String humanizeError(String? raw) {
+  if (raw == null || raw.isEmpty) return "reward_validate_failed".tr;
+
+  final translated = raw.tr;
+  // GetX returns the key unchanged if no translation exists — catch that case
+  if (translated == raw) {
+    return "reward_validate_failed".tr;
+  }
+  return translated;
 }
 }
 

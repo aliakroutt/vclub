@@ -25,6 +25,17 @@ class AuthApiClient {
       },
     );
   }
+  // google login 
+  static Future<Response> googleLogin({
+  required String idToken,
+}) {
+  return _dio.post(
+    ApiRoutes.google_login,
+    data: {
+      "idToken": idToken,
+    },
+  );
+}
 
   //==========================================================
   // REGISTER

@@ -100,9 +100,7 @@ class HistoryTab extends StatelessWidget {
 // HELPERS
 // =========================
 
-/// Tries "history_action_<action>".tr first (e.g. history_action_add_points).
-/// Falls back to a humanized version of the raw action string if no
-/// translation is found, so you never show a raw i18n key to the user.
+
 String _actionLabel(String action) {
   if (action.isEmpty) return '';
   final key = 'history_action_$action';
@@ -126,7 +124,7 @@ const _spendActions = {'validate_reward'};
 // points_reward / stamp_reward are informational log entries (a reward was
 // claimed) that carry no amount — treated as neutral, not earn/spend.
 
-bool? _directionFor(String action, int? amount) {
+bool? _directionFor(String action, num? amount) {
   if (_earnActions.contains(action)) return true;
   if (_spendActions.contains(action)) return false;
   if (amount == null) return null;
@@ -362,7 +360,7 @@ class _ViewAllButton extends StatelessWidget {
               ),
               SizedBox(width: size.width * 0.014),
               Icon(
-                isRTL ? Iconsax.arrow_left_3 : Iconsax.arrow_right_3,
+                isRTL ? Iconsax.arrow_circle_left_copy : Iconsax.arrow_circle_right_copy,
                 size: size.width * 0.036,
                 color: AppColors.primary,
               ),

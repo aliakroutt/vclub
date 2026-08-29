@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
 import 'package:vclub/Configs/Theme/app_colors.dart';
 import 'package:vclub/Core/Navigation/app_navigator.dart';
 import 'package:vclub/Core/Storage/Controllers/ClientController.dart';
 import 'package:vclub/Features/Client/Dashboard/Controllers/ClientDashboardController.dart';
+import 'package:vclub/Features/Client/MyProfile/View/Controllers/UpdateAvatarController.dart';
 import 'package:vclub/Features/Client/MyProfile/View/UpdateProfile/UpdateClientScreen.dart';
+import 'package:vclub/Features/Client/MyProfile/View/Widgets/ChangePasswordSheet.dart';
 import 'package:vclub/Features/Client/MyProfile/View/Widgets/ClubsSection.dart';
 import 'package:vclub/Features/Client/MyProfile/View/Widgets/ProfileActions.dart';
 import 'package:vclub/Features/Client/MyProfile/View/Widgets/ProfileHeader.dart';
@@ -34,6 +38,9 @@ class _ProfileClientState extends State<ProfileClient> {
   @override
   void initState() {
     super.initState();
+    if (!Get.isRegistered<UpdateAvatarController>()) {
+    Get.put(UpdateAvatarController());
+  }
     _loadData();
   }
 
@@ -50,61 +57,20 @@ class _ProfileClientState extends State<ProfileClient> {
     ]);
   }
 
-  void _showChangeAvatarSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Container(
-          padding: EdgeInsets.fromLTRB(20, 12, 20, 24 + MediaQuery.of(ctx).padding.bottom),
-          decoration: BoxDecoration(
-            color: Theme.of(ctx).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4.5,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(color: isDark ? Colors.white24 : Colors.black12, borderRadius: BorderRadius.circular(10)),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: AppText("change_profile_photo".tr, fontSize: 17, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 6),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: AppText("choose_a_new_photo".tr, fontSize: 13, color: Colors.grey),
-              ),
-              const SizedBox(height: 20),
-              _SheetActionTile(
-                icon: Iconsax.camera,
-                label: "take_photo".tr,
-                onTap: () {
-                  Get.back();
-                  // TODO: hook up image_picker (ImageSource.camera) + upload
-                },
-              ),
-              const SizedBox(height: 10),
-              _SheetActionTile(
-                icon: Iconsax.gallery,
-                label: "choose_from_gallery".tr,
-                onTap: () {
-                  Get.back();
-                  // TODO: hook up image_picker (ImageSource.gallery) + upload
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  Future<void> _pickAndUploadAvatar() async {
+  final ImagePicker picker = ImagePicker();
+
+  final XFile? picked = await picker.pickImage(
+    source: ImageSource.gallery,
+    imageQuality: 85,
+    maxWidth: 1000,
+  );
+
+  if (picked == null) return;
+
+  final controller = Get.find<UpdateAvatarController>();
+  await controller.uploadAvatar(File(picked.path));
+}
 
   void _onEditProfile() {
     AppNavigator.to(EditProfileScreen());
@@ -112,17 +78,8 @@ class _ProfileClientState extends State<ProfileClient> {
   }
 
   void _onChangePassword() {
-    // TODO: navigate to the change-password screen/form.
-    Get.snackbar(
-      "coming_soon".tr,
-      "change_password_coming_soon".tr,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.primary,
-      colorText: Colors.white,
-      borderRadius: 14,
-      margin: const EdgeInsets.all(14),
-    );
-  }
+  showChangePasswordSheet(context);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +120,7 @@ class _ProfileClientState extends State<ProfileClient> {
                       index: 0,
                       child: ProfileSummaryCard(
                         client: client,
-                        onChangeAvatar: _showChangeAvatarSheet,
+                        onChangeAvatar: _pickAndUploadAvatar,
                       ),
                     );
                   }),
@@ -191,7 +148,7 @@ class _ProfileClientState extends State<ProfileClient> {
                     child: ProfileActionsCard(
                       onEditInfo: _onEditProfile,
                       onChangePassword: _onChangePassword,
-                      onChangePhoto: _showChangeAvatarSheet,
+                      onChangePhoto: _pickAndUploadAvatar,
                     ),
                   ),
 
@@ -260,42 +217,42 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _SheetActionTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+// class _SheetActionTile extends StatelessWidget {
+//   final IconData icon;
+//   final String label;
+//   final VoidCallback onTap;
 
-  const _SheetActionTile({required this.icon, required this.label, required this.onTap});
+//   const _SheetActionTile({required this.icon, required this.label, required this.onTap});
 
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Material(
-      color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(13)),
-                child: Icon(icon, size: 19, color: AppColors.primary),
-              ),
-              const SizedBox(width: 14),
-              Expanded(child: AppText(label, fontSize: 14.5, fontWeight: FontWeight.w600)),
-              Icon(Iconsax.arrow_right_3, size: 16, color: Colors.grey.withOpacity(0.6)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     final isDark = Theme.of(context).brightness == Brightness.dark;
+//     return Material(
+//       color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+//       borderRadius: BorderRadius.circular(16),
+//       child: InkWell(
+//         borderRadius: BorderRadius.circular(16),
+//         onTap: onTap,
+//         child: Padding(
+//           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+//           child: Row(
+//             children: [
+//               Container(
+//                 width: 42,
+//                 height: 42,
+//                 decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(13)),
+//                 child: Icon(icon, size: 19, color: AppColors.primary),
+//               ),
+//               const SizedBox(width: 14),
+//               Expanded(child: AppText(label, fontSize: 14.5, fontWeight: FontWeight.w600)),
+//               Icon(Iconsax.arrow_right_3, size: 16, color: Colors.grey.withOpacity(0.6)),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class _CardSkeleton extends StatelessWidget {
   final double height;

@@ -4,6 +4,8 @@ import 'package:vclub/Features/Merchant/Settings/Models/SessionModel.dart';
 import 'package:vclub/Features/Merchant/Settings/Services/SettingsApiClient.dart';
 
 class SessionsController extends GetxController {
+  static SessionsController get to => Get.find();
+
   final RxList<SessionModel> sessions = <SessionModel>[].obs;
 
   final RxBool loading = false.obs;
@@ -51,4 +53,18 @@ class SessionsController extends GetxController {
   }
 
   Future<void> refresh() => fetchSessions();
+
+  // =========================
+  // RESET
+  // =========================
+  /// Clears sessions list and state flags back to initial values. Call
+  /// this on logout so the next fetch starts clean and doesn't briefly
+  /// flash a previous merchant's active sessions.
+  void resetControllerData() {
+    sessions.clear();
+    loading.value = false;
+    hasError.value = false;
+    initialLoaded.value = false;
+    revokingJti.value = "";
+  }
 }

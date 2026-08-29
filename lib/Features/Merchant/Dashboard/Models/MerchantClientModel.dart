@@ -5,6 +5,7 @@ class MembershipClientModel {
   final String email;
   final String? phone;
   final DateTime? birthday;
+  final String? avatar;
 
   MembershipClientModel({
     required this.id,
@@ -13,6 +14,7 @@ class MembershipClientModel {
     required this.email,
     this.phone,
     this.birthday,
+    this.avatar,
   });
 
   factory MembershipClientModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class MembershipClientModel {
       birthday: json['birthday'] != null
           ? DateTime.tryParse(json['birthday'].toString())
           : null,
+      avatar: json['avatar']?.toString(),
     );
   }
 
@@ -36,6 +39,7 @@ class MembershipClientModel {
       'email': email,
       'phone': phone,
       'birthday': birthday?.toIso8601String(),
+      'avatar': avatar,
     };
   }
 }

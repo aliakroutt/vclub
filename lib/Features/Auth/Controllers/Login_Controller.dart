@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vclub/API/Socket/MerchantRealtimeController.dart';
+import 'package:vclub/API/SocketService.dart';
 import 'package:vclub/API/auth_api_client.dart';
+import 'package:vclub/Core/Auth/GoogleSignInService.dart';
 import 'package:vclub/Core/Navigation/app_navigator.dart';
 import 'package:vclub/Core/Snackbars.dart';
 import 'package:vclub/Core/Storage/Controllers/AgentController.dart';
@@ -12,6 +15,7 @@ import 'package:vclub/Core/Storage/TokenStorage.dart';
 import 'package:vclub/Core/Widgets/AppLoader.dart';
 import 'package:vclub/Features/Auth/Services/AgentService.dart';
 import 'package:vclub/Features/Auth/Services/ClientService.dart';
+import 'package:vclub/Features/Auth/Services/DeviceService.dart';
 import 'package:vclub/Features/Auth/Services/MerchantService.dart';
 import 'package:vclub/Features/Client/Main/Views/MainScreen.dart';
 import 'package:vclub/Features/Merchant/Main/Controllers/MerchantMainController.dart';
@@ -90,7 +94,7 @@ class LoginController extends GetxController {
           accessToken: accessToken,
           refreshToken: refreshToken,
         );
-
+        Get.find<SocketService>().connect(accessToken);
         final clientJson = data["client"] as Map<String, dynamic>?;
         final userJson = data["user"] as Map<String, dynamic>?;
 
@@ -114,6 +118,7 @@ class LoginController extends GetxController {
             return;
           }
           await ClientController.to.saveClient(profile);
+          DeviceService.registerFcmToken(UserRole.client);
         } else if (role == UserRole.agent) {
           // ── STAFF / AGENT ──
           final userId = userJson?["id"]?.toString();
@@ -130,6 +135,7 @@ class LoginController extends GetxController {
             return;
           }
           await AgentController.to.saveAgent(profile);
+          ensureMerchantRealtime();
         } else {
           // ── ADMIN / MERCHANT ──
           final userId = userJson?["id"]?.toString();
@@ -146,6 +152,8 @@ class LoginController extends GetxController {
             return;
           }
           await MerchantController.to.saveMerchant(profile);
+          DeviceService.registerFcmToken(UserRole.admin);
+          ensureMerchantRealtime();
           if (MerchantController.to.isFreePlan) {
             final mainController = Get.isRegistered<MerchantMainController>()
                 ? Get.find<MerchantMainController>()
@@ -188,7 +196,81 @@ class LoginController extends GetxController {
       AppSnackBar.error("Unexpected error occurred");
     }
   }
+    // google login 
+    final RxBool isGoogleLoading = false.obs;
 
+Future<void> loginWithGoogle() async {
+  try {
+    isGoogleLoading.value = true;
+
+    final idToken = await GoogleSignInService.signInAndGetIdToken();
+
+    if (idToken == null) {
+      isGoogleLoading.value = false;
+      return; // user cancelled — no error needed
+    }
+
+    final response = await AuthApiClient.googleLogin(idToken: idToken);
+    final data = response.data;
+
+    if (data is! Map<String, dynamic>) {
+      isGoogleLoading.value = false;
+      AppSnackBar.error("Unexpected server response");
+      return;
+    }
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final accessToken = data["accessToken"] as String?;
+      final refreshToken = data["refreshToken"] as String?;
+
+      if (accessToken == null || refreshToken == null) {
+        isGoogleLoading.value = false;
+        AppSnackBar.error("Login response missing tokens");
+        return;
+      }
+
+      debugPrint("✅ GOOGLE LOGIN SUCCESS");
+      await TokenStorage.saveTokens(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
+      Get.find<SocketService>().connect(accessToken);
+
+      // Client-only flow, per spec.
+      await TokenStorage.saveUserRole(UserRole.client);
+
+      final clientJson = data["client"] as Map<String, dynamic>?;
+      final clientId = clientJson?["id"]?.toString();
+      if (clientId != null) await TokenStorage.saveUserId(clientId);
+
+      final profile = await ClientService.profile();
+      isGoogleLoading.value = false;
+
+      if (profile == null) {
+        AppSnackBar.error("Failed to load profile");
+        return;
+      }
+      await ClientController.to.saveClient(profile);
+      DeviceService.registerFcmToken(UserRole.client);
+
+      AppNavigator.to(MainScreen());
+    } else {
+      isGoogleLoading.value = false;
+      final message = data["message"]?.toString() ?? "Google login failed";
+      AppSnackBar.error(message);
+    }
+  } on DioException catch (e) {
+    isGoogleLoading.value = false;
+    final data = e.response?.data;
+    final message = (data is Map<String, dynamic>) ? data["message"]?.toString() : null;
+    AppSnackBar.error(message ?? "Network error, please try again");
+  } catch (e, st) {
+    isGoogleLoading.value = false;
+    debugPrint("❌ GOOGLE LOGIN ERROR: $e");
+    debugPrint("$st");
+    AppSnackBar.error("Unexpected error occurred");
+  }
+}
   // =========================
   // LOGIN ACTION
   // =========================
@@ -198,6 +280,13 @@ class LoginController extends GetxController {
       email: emailController.text.trim(),
       password: passwordController.text,
     );
+  }
+
+  void ensureMerchantRealtime() {
+    if (!Get.isRegistered<MerchantRealtimeController>()) {
+      Get.put(MerchantRealtimeController(), permanent: true);
+    }
+    MerchantRealtimeController.to.startListening();
   }
 
   @override

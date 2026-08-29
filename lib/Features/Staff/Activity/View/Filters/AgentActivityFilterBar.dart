@@ -28,17 +28,13 @@ class AgentActivityFilterBar extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: isDark ? const Color(0xFF1C1F26) : Colors.white,
-          border: Border.all(color: isDark ? Colors.white.withOpacity(.07) : Colors.black.withOpacity(.05)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? .25 : .04),
-              blurRadius: 14,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
+        borderRadius: BorderRadius.circular(24),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.05)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(isDark ? .22 : .04), blurRadius: 16, offset: const Offset(0, 4)),
+        ],
+      ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
