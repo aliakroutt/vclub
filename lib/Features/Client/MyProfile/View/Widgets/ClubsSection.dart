@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -126,14 +124,9 @@ class _StoryAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     ImageProvider? decodeLogo(String? logo) {
-      if (logo == null || logo.isEmpty) return null;
-      try {
-        final b64 = logo.contains(',') ? logo.split(',').last : logo;
-        return MemoryImage(base64Decode(b64));
-      } catch (_) {
-        return null;
-      }
-    }
+  if (logo == null || logo.isEmpty) return null;
+  return NetworkImage(logo);
+}
 
     return InkWell(
       onTap: onTap,

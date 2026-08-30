@@ -17,7 +17,8 @@ class _ForgetPasswordState extends State<ForgetPassword> {
   final controller = Get.put(ForgotPasswordController());
   final PageController pageController = PageController();
   Future<void> nextStep() async {
-    if (controller.currentStep.value >= ForgotPasswordController.totalSteps - 1) return;
+    if (controller.currentStep.value >= ForgotPasswordController.totalSteps - 1)
+      return;
 
     controller.currentStep.value++;
 
@@ -51,81 +52,83 @@ class _ForgetPasswordState extends State<ForgetPassword> {
       curve: Curves.easeInOutCubic,
     );
   }
-  void sendCode() {
-    if (controller.emailController.text.trim().isEmpty) {
-      // validation
-      return;
+
+  Future<void> sendCode() async {
+    final success = await controller.sendCode();
+    if (success) {
+      nextStep();
     }
-
-    nextStep();
   }
-  void verifyOtp() {
-  if (controller.otpCode.length < 6) return;
 
-  nextStep();
-}
+  Future<void> verifyOtpStep() async {
+    final success = await controller.verifyOtp();
+    if (success) {
+      nextStep();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return  KeyboardDismissOnTap(child:  Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body:SingleChildScrollView( // ✅ scroll when keyboard appears
-        physics: const ClampingScrollPhysics(),
-        child: SizedBox(
-          height: size.height, // ✅ full screen height
-          child:  Stack(
-        children: [
-          Positioned(
-            top: -size.height * 0.05,
-            right: -size.width * 0.25,
-            child: BackgroundCircle(
-              size: size.width * 0.7,
-              innerSize: size.width * 0.45,
+    return KeyboardDismissOnTap(
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SingleChildScrollView(
+          // ✅ scroll when keyboard appears
+          physics: const ClampingScrollPhysics(),
+          child: SizedBox(
+            height: size.height, // ✅ full screen height
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -size.height * 0.05,
+                  right: -size.width * 0.25,
+                  child: BackgroundCircle(
+                    size: size.width * 0.7,
+                    innerSize: size.width * 0.45,
+                  ),
+                ),
+
+                Positioned(
+                  bottom: -size.height * 0.05,
+                  left: -size.width * 0.20,
+                  child: BackgroundCircle(
+                    size: size.width * 0.55,
+                    innerSize: size.width * 0.35,
+                  ),
+                ),
+
+                SafeArea(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 25),
+
+                      ForgotPasswordSteps(() {
+                        previousStep();
+                      }),
+
+                      const SizedBox(height: 35),
+
+                      Expanded(
+                        child: PageView(
+                          controller: pageController,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [
+                            EmailStep(sendCode),
+                            OtpStep(verifyOtpStep),
+                            const NewPasswordStep(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          
-
-          Positioned(
-            bottom: -size.height * 0.05,
-            left: -size.width * 0.20,
-            child: BackgroundCircle(
-              size: size.width * 0.55,
-              innerSize: size.width * 0.35,
-            ),
-          ),
-          
-          SafeArea(child:  Column(
-          children: [
-
-            const SizedBox(height: 25),
-
-             ForgotPasswordSteps((){previousStep();}),
-
-            const SizedBox(height: 35),
-
-            Expanded(
-              child: PageView(
-                controller: pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children:  [
-
-                  EmailStep( (){nextStep();}  ),
-
-                  OtpStep((){nextStep();} ),
-
-                  NewPasswordStep(),
-
-                ],
-              ),
-            ),
-          ],
-        )),
-        ],
-      ))),
-    ));
+        ),
+      ),
+    );
   }
 }
-
-
-

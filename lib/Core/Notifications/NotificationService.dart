@@ -100,7 +100,7 @@ class NotificationService {
       case 'reward':
         debugPrint('🎁 Reward notification');
 
-        // TODO:
+      
         // Navigate to reward details
         //
         // Get.to(
@@ -114,7 +114,7 @@ class NotificationService {
       case 'points':
         debugPrint('⭐ Points notification');
 
-        // TODO:
+     
         // Navigate to card details
 
         break;

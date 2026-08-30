@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -24,14 +23,9 @@ class WheelCard extends StatelessWidget {
   });
 
   ImageProvider? _decodeLogo(String? logo) {
-    if (logo == null || logo.isEmpty) return null;
-    try {
-      final b64 = logo.contains(',') ? logo.split(',').last : logo;
-      return MemoryImage(base64Decode(b64));
-    } catch (_) {
-      return null;
-    }
-  }
+  if (logo == null || logo.isEmpty) return null;
+  return NetworkImage(logo);
+}
 
   @override
   Widget build(BuildContext context) {

@@ -361,6 +361,55 @@ class LoyaltyModeController extends GetxController {
     }
   }
 
+  // ── ADD REWARD (inline, from picker) ────────────
+final rewardNameController = TextEditingController();
+final RxString rewardTypeSelection = "product".obs;
+final RxBool isAddingRewardFromPicker = false.obs;
+
+final List<Map<String, String>> rewardTypeOptions = const [
+  {"value": "product", "label": "reward_type_product"},
+  {"value": "discount", "label": "reward_type_discount"},
+  {"value": "free_item", "label": "reward_type_free_item"},
+  {"value": "drink", "label": "reward_type_drink"},
+  {"value": "dessert", "label": "reward_type_dessert"},
+  {"value": "points_bonus", "label": "reward_type_points_bonus"},
+  {"value": "other", "label": "reward_type_other"},
+];
+
+/// Creates a reward from the inline picker's add-reward sheet, refreshes
+/// the picker's reward list, and auto-selects the newly created reward.
+/// Returns true on success so the sheet knows to close.
+Future<bool> addRewardFromPicker() async {
+  final name = rewardNameController.text.trim();
+
+  if (name.isEmpty) {
+    AppSnackBar.error("reward_name_required".tr);
+    return false;
+  }
+
+  try {
+    isAddingRewardFromPicker.value = true;
+
+    final created = await MerchantRewardsApiClient.addReward(
+      name: name,
+      type: rewardTypeSelection.value,
+    );
+
+    availableRewards.insert(0, created);
+    selectedReward.value = created;
+
+    rewardNameController.clear();
+    rewardTypeSelection.value = "product";
+
+    return true;
+  } catch (e) {
+    AppSnackBar.error("reward_add_failed".tr);
+    return false;
+  } finally {
+    isAddingRewardFromPicker.value = false;
+  }
+}
+
   void reset() {
     nameController.clear();
     pointsPerEuroController.clear();
@@ -381,6 +430,7 @@ class LoyaltyModeController extends GetxController {
     vipThresholdController.clear();
     reviewPointsController.clear();
     reviewCooldownController.clear();
+     rewardNameController.clear();
     for (final c in vipNameControllers.values) c.clear();
     for (final c in vipPointsControllers.values) c.clear();
   }

@@ -1,4 +1,3 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
@@ -115,20 +114,6 @@ class _ClientDashboardState extends State<ClientDashboard> {
                       rewardcontroller.select(2);
                       controller.selectIndex(2);
 
-                      await AwesomeNotifications().createNotification(
-                        content: NotificationContent(
-                          id: 999,
-                          channelKey: 'high_importance_channel',
-                          title: 'Manual Test',
-                          body: 'If you see this, Awesome Notifications works',
-                        ),
-                      );
-                      // AppNavigator.to(
-                      //   ClubScreen(
-                      //     clubSlug: 'techazum',
-                      //     role: ClubViewerRole.staff,
-                      //   ),
-                      // );
                     },
                   ),
                 ),

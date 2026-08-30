@@ -35,6 +35,52 @@ class AuthApiClient {
       "idToken": idToken,
     },
   );
+} 
+//==========================================================
+// FORGOT PASSWORD — SEND CODE
+//==========================================================
+
+static Future<Response> sendResetCode({
+  required String email,
+}) {
+  return _dio.post(
+    ApiRoutes.send_code,
+    data: {"email": email},
+  );
+}
+
+//==========================================================
+// FORGOT PASSWORD — VERIFY CODE
+//==========================================================
+
+static Future<Response> verifyResetCode({
+  required String email,
+  required String code,
+}) {
+  return _dio.post(
+    ApiRoutes.verify_code,
+    data: {
+      "email": email,
+      "code": code,
+    },
+  );
+}
+
+//==========================================================
+// FORGOT PASSWORD — RESET PASSWORD
+//==========================================================
+
+static Future<Response> resetPasswordWithToken({
+  required String resetToken,
+  required String newPassword,
+}) {
+  return _dio.post(
+    ApiRoutes.reset_password,
+    data: {
+      "resetToken": resetToken,
+      "newPassword": newPassword,
+    },
+  );
 }
 
   //==========================================================

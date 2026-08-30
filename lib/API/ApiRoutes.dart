@@ -11,6 +11,9 @@ static const String upload_logo = "/upload/logo";
   static const String Login = '/auth/login';
   static const String google_login = '/auth/google';
   static const String Logout = '/auth/logout';
+  static const String send_code = '/auth/forgot-password';
+  static const String verify_code = '/auth/verify-reset-code';
+  static const String reset_password = '/auth/reset-password';
   // refresh token
   static const String refreshToken = '/auth/refresh'; 
   static const String change_password = '/auth/change-password' ;

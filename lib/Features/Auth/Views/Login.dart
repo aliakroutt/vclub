@@ -51,7 +51,7 @@ class _LoginState extends State<Login> {
             child: LanguageSelector(),
           ),
           Positioned(
-            top: size.height * 0.3,
+            top: size.height * 0.2,
             left: size.width * 0.0,
             right: size.width * 0.0,
             child:  LoginColumn(),

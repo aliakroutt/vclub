@@ -1600,6 +1600,17 @@ const Map<String, String> enUS = {
   "uploading_logo": "Uploading...",
   "or_continue_with": "or continue with",
   "continue_with_google": "Continue with Google",
+  "otp_incomplete": "Please enter the full 6-digit code",
+  "reset_code_sent": "Verification code sent to your email",
+  "reset_code_resent": "Code resent",
+  "reset_code_send_failed": "Failed to send verification code",
+  "otp_verify_failed": "Could not verify code, please try again",
+  "invalid_otp_code": "Invalid or expired code",
+  "reset_session_expired": "Session expired, please start again",
+  "password_reset_failed": "Failed to reset password",
+  "reward_count_available": "@count reward(s) available",
+  "no_rewards_yet_subtitle": "You haven't created any rewards yet — let's add your first one",
+  
   
   
   
