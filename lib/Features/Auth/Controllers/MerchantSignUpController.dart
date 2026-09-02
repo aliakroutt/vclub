@@ -35,6 +35,16 @@ class MerchantSignUpController extends GetxController {
 
   bool get hasSelectedPlan => selectedPlanIndex.value != -1;
 
+ final RxBool includeSmsAddon = false.obs;
+
+void toggleSmsAddon() {
+  includeSmsAddon.value = !includeSmsAddon.value;
+}
+
+// When switching plans, drop the SMS selection if it no longer applies
+// (e.g. switching to a disabled/quote plan).
+
+
   // =========================
   // COMPANY DATA
   // =========================
@@ -242,6 +252,7 @@ class MerchantSignUpController extends GetxController {
         "googleReviewLink": googleReviewLinkController.text.trim(),
         "plan": planKeys[selectedPlanIndex.value],
         "language": Get.locale?.languageCode ?? "fr",
+        "sms": includeSmsAddon.value,
       };
 
       // 3) Call signup
@@ -256,7 +267,7 @@ class MerchantSignUpController extends GetxController {
       debugPrint(data.toString());
       if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint("✅ MERCHANT SIGNUP SUCCESS");
-
+        AppLoader.hide();
         final checkoutUrl = data["checkoutUrl"] as String?;
 
         if (checkoutUrl != null && checkoutUrl.isNotEmpty) {
@@ -339,7 +350,7 @@ class MerchantSignUpController extends GetxController {
     countryController.clear();
 
     googleReviewLinkController.clear();
-
+    includeSmsAddon.value = false;
     facebookController.clear();
     instagramController.clear();
     linkedinController.clear();

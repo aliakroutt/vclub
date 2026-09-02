@@ -24,16 +24,19 @@ class PlanPriceModel {
 }
 
 /// Static feature list per plan key, merged with live pricing from the API.
+/// Static feature list per plan key, merged with live pricing from the API.
 class PlanFeaturesModel {
   final String key;
   final String titleKey;
   final List<String> featureKeys;
+  final String? inheritedKey;
   final bool popular;
 
   const PlanFeaturesModel({
     required this.key,
     required this.titleKey,
     required this.featureKeys,
+    this.inheritedKey,
     this.popular = false,
   });
 
@@ -42,37 +45,32 @@ class PlanFeaturesModel {
       key: "STARTER",
       titleKey: "starter",
       featureKeys: [
-        "loyalty_program",
-        "qr_code",
-        "clients_200_max",
-        "google_reviews",
-        "basic_analytics",
+        "plan_limited_loyalty_program",
+        "plan_qr_code",
+        "plan_clients_200_max",
+        "plan_statistics",
       ],
     ),
     PlanFeaturesModel(
       key: "BUSINESS",
       titleKey: "business",
       featureKeys: [
-        "unlimited_clients",
-        "nfc_card",
-        "lucky_wheel",
-        "marketing_tools",
-        "push_notifications",
-        "campaigns",
+        "plan_unlimited_loyalty_program",
+        "plan_unlimited_clients",
+        "plan_lucky_wheel",
+        "plan_google_reviews",
       ],
+      inheritedKey: "everything_in_starter",
       popular: true,
     ),
     PlanFeaturesModel(
       key: "PREMIUM",
       titleKey: "premium",
       featureKeys: [
-        "multi_location",
-        "advanced_crm",
-        "white_label",
-        "automation",
-        "api_access",
-        "multiple_employees",
+        "plan_multi_access_employees",
+        "plan_marketing_campaigns",
       ],
+      inheritedKey: "everything_in_starter_business",
     ),
   ];
 

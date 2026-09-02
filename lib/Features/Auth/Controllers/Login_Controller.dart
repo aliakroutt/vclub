@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -210,7 +212,12 @@ Future<void> loginWithGoogle() async {
       return; // user cancelled — no error needed
     }
 
-    final response = await AuthApiClient.googleLogin(idToken: idToken);
+    final response = await AuthApiClient.googleLogin(idToken: idToken).timeout(
+      const Duration(seconds: 20),
+      onTimeout: () {
+        throw TimeoutException('Google login request timed out');
+      },
+    );
     final data = response.data;
 
     if (data is! Map<String, dynamic>) {
@@ -243,7 +250,10 @@ Future<void> loginWithGoogle() async {
       final clientId = clientJson?["id"]?.toString();
       if (clientId != null) await TokenStorage.saveUserId(clientId);
 
-      final profile = await ClientService.profile();
+      final profile = await ClientService.profile().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => null,
+      );
       isGoogleLoading.value = false;
 
       if (profile == null) {
@@ -259,6 +269,9 @@ Future<void> loginWithGoogle() async {
       final message = data["message"]?.toString() ?? "Google login failed";
       AppSnackBar.error(message);
     }
+  } on TimeoutException catch (_) {
+    isGoogleLoading.value = false;
+    AppSnackBar.error("request_timed_out".tr);
   } on DioException catch (e) {
     isGoogleLoading.value = false;
     final data = e.response?.data;

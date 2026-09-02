@@ -38,7 +38,7 @@ class VipConfigurationCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// ── HEADER ───────────────────────────────────────
+          /// ── HEADER + TOGGLE ───────────────────────────────
           Row(
             children: [
               Container(
@@ -78,44 +78,96 @@ class VipConfigurationCard extends StatelessWidget {
                   ],
                 ),
               ),
+
+              SizedBox(width: size.width * 0.02),
+
+              Obx(
+                () => Switch.adaptive(
+                  value: controller.vipEnabled.value,
+                  onChanged: controller.toggleVipEnabled,
+                  activeColor: purple,
+                ),
+              ),
             ],
           ),
 
-          SizedBox(height: size.height * 0.02),
+          Obx(() {
+            if (!controller.vipEnabled.value) {
+              return Padding(
+                padding: EdgeInsets.only(top: size.height * 0.014),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: size.width * 0.035,
+                    vertical: size.height * 0.012,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: isDark
+                        ? Colors.white.withOpacity(0.03)
+                        : Colors.black.withOpacity(0.025),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Iconsax.info_circle,
+                        size: size.width * 0.04,
+                        color: Colors.grey.shade500,
+                      ),
+                      SizedBox(width: size.width * 0.02),
+                      Expanded(
+                        child: AppText(
+                          "vip_disabled_hint".tr,
+                          fontSize: size.width * 0.030,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
 
-          Divider(
-            color: isDark
-                ? Colors.white.withOpacity(0.06)
-                : Colors.black.withOpacity(0.05),
-          ),
+            return Column(
+              children: [
+                SizedBox(height: size.height * 0.02),
 
-          SizedBox(height: size.height * 0.02),
+                Divider(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.06)
+                      : Colors.black.withOpacity(0.05),
+                ),
 
-          /// ── FIELDS ───────────────────────────────────────
-          LoyaltyInputField(
-            label: "vip_threshold_pts".tr,
-            icon: Iconsax.crown,
-            controller: controller.vipThresholdController,
-            hint: "e.g. 1000 pts",
-          ),
+                SizedBox(height: size.height * 0.02),
 
-          SizedBox(height: size.height * 0.015),
+                /// ── FIELDS ───────────────────────────────────────
+                LoyaltyInputField(
+                  label: "vip_threshold_pts".tr,
+                  icon: Iconsax.crown,
+                  controller: controller.vipThresholdController,
+                  hint: "e.g. 1000 pts",
+                ),
 
-          LoyaltyInputField(
-            label: "pts_for_review".tr,
-            icon: Iconsax.star,
-            controller: controller.reviewPointsController,
-            hint: "e.g. 50 pts",
-          ),
+                SizedBox(height: size.height * 0.015),
 
-          SizedBox(height: size.height * 0.015),
+                LoyaltyInputField(
+                  label: "pts_for_review".tr,
+                  icon: Iconsax.star,
+                  controller: controller.reviewPointsController,
+                  hint: "e.g. 50 pts",
+                ),
 
-          LoyaltyInputField(
-            label: "review_cooldown_days".tr,
-            icon: Iconsax.calendar,
-            controller: controller.reviewCooldownController,
-            hint: "e.g. 30 days",
-          ),
+                SizedBox(height: size.height * 0.015),
+
+                LoyaltyInputField(
+                  label: "review_cooldown_days".tr,
+                  icon: Iconsax.calendar,
+                  controller: controller.reviewCooldownController,
+                  hint: "e.g. 30 days",
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );

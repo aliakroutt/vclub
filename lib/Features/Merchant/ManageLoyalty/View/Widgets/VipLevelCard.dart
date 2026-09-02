@@ -10,13 +10,6 @@ class VIPLevelsCard extends StatelessWidget {
   final controller = Get.find<LoyaltyModeController>();
   static const Color blue = Color(0xFF3B82F6);
 
-  final List<Map<String, dynamic>> defaultLevels = [
-    {"key": "bronze",   "name": "vip_bronze",   "color": const Color(0xFFCD7F32)},
-    {"key": "silver",   "name": "vip_silver",   "color": const Color(0xFFB0BEC5)},
-    {"key": "gold",     "name": "vip_gold",     "color": const Color(0xFFFFC107)},
-    {"key": "platinum", "name": "vip_platinum", "color": const Color(0xFFE5E4E2)},
-  ];
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -83,45 +76,107 @@ class VIPLevelsCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: blue.withOpacity(0.1),
-                  border: Border.all(color: blue.withOpacity(0.2)),
-                ),
-                child: AppText(
-                  "${defaultLevels.length} ${"levels".tr}",
-                  fontSize: size.width * 0.027,
-                  fontWeight: FontWeight.w600,
-                  color: blue,
-                ),
-              ),
+              Obx(() => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: blue.withOpacity(0.1),
+                      border: Border.all(color: blue.withOpacity(0.2)),
+                    ),
+                    child: AppText(
+                      "${controller.vipLevels.length} ${"levels".tr}",
+                      fontSize: size.width * 0.027,
+                      fontWeight: FontWeight.w600,
+                      color: blue,
+                    ),
+                  )),
             ],
           ),
 
-       
+          SizedBox(height: size.height * 0.022),
 
+          /// ── LEVELS LIST / EMPTY STATE ──────────────────
+          Obx(() {
+            if (controller.vipLevels.isEmpty) {
+              return Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.04,
+                  vertical: size.height * 0.03,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  color: isDark
+                      ? Colors.white.withOpacity(0.03)
+                      : Colors.black.withOpacity(0.025),
+                ),
+                child: Column(
+                  children: [
+                    Icon(Iconsax.crown, size: size.width * 0.09, color: Colors.grey.shade400),
+                    SizedBox(height: size.height * 0.012),
+                    AppText(
+                      "no_vip_levels_yet".tr,
+                      fontSize: size.width * 0.033,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade500,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            }
 
-
-SizedBox(height: size.height * 0.022),
-          /// ── LEVELS ──────────────────────────────
-          ...List.generate(defaultLevels.length, (index) {
-            final level = defaultLevels[index];
-            final isLast = index == defaultLevels.length - 1;
-            return Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : size.height * 0.014),
-              child: _VipLevelItem(
-                size: size,
-                isDark: isDark,
-                index: index,
-                levelKey: level["key"],
-                titleKey: level["name"],
-                defaultColor: level["color"],
-                controller: controller,
-              ),
+            return Column(
+              children: List.generate(controller.vipLevels.length, (index) {
+                final level = controller.vipLevels[index];
+                final isLast = index == controller.vipLevels.length - 1;
+                return Padding(
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : size.height * 0.014),
+                  child: _VipLevelItem(
+                    key: ValueKey(level.id),
+                    size: size,
+                    isDark: isDark,
+                    index: index,
+                    entry: level,
+                    controller: controller,
+                  ),
+                );
+              }),
             );
           }),
+
+          SizedBox(height: size.height * 0.018),
+
+          /// ── ADD LEVEL BUTTON ──────────────────
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: controller.addVipLevel,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: size.height * 0.015),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: blue.withOpacity(0.35), width: 1.4),
+                  color: blue.withOpacity(0.06),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Iconsax.add_circle, size: size.width * 0.045, color: blue),
+                    SizedBox(width: size.width * 0.02),
+                    AppText(
+                      "add_vip_level".tr,
+                      fontWeight: FontWeight.w700,
+                      fontSize: size.width * 0.035,
+                      color: blue,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -135,18 +190,15 @@ class _VipLevelItem extends StatefulWidget {
   final Size size;
   final bool isDark;
   final int index;
-  final String levelKey;
-  final String titleKey;
-  final Color defaultColor;
+  final VipLevelEntry entry;
   final LoyaltyModeController controller;
 
   const _VipLevelItem({
+    super.key,
     required this.size,
     required this.isDark,
     required this.index,
-    required this.levelKey,
-    required this.titleKey,
-    required this.defaultColor,
+    required this.entry,
     required this.controller,
   });
 
@@ -158,110 +210,227 @@ class _VipLevelItemState extends State<_VipLevelItem> {
   bool _showColorPicker = false;
 
   static const List<Color> _palette = [
-    Color(0xFFCD7F32), // bronze
-    Color(0xFFB0BEC5), // silver
-    Color(0xFFFFC107), // gold
-    Color(0xFFE5E4E2), // platinum
-    Color(0xFF3B82F6), // blue
-    Color(0xFF8B5CF6), // violet
-    Color(0xFF10B981), // emerald
-    Color(0xFFEF4444), // red
-    Color(0xFFF97316), // orange
-    Color(0xFFEC4899), // pink
-    Color(0xFF06B6D4), // cyan
-    Color(0xFFA3E635), // lime
+    Color(0xFFCD7F32),
+    Color(0xFFB0BEC5),
+    Color(0xFFFFC107),
+    Color(0xFFE5E4E2),
+    Color(0xFF3B82F6),
+    Color(0xFF8B5CF6),
+    Color(0xFF10B981),
+    Color(0xFFEF4444),
+    Color(0xFFF97316),
+    Color(0xFFEC4899),
+    Color(0xFF06B6D4),
+    Color(0xFFA3E635),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final s = widget.size;
-    final isDark = widget.isDark;
+   final s = widget.size;
+  final isDark = widget.isDark;
+  final entry = widget.entry;
+  final activeColor = entry.color;
 
-    final nameCtrl =
-        widget.controller.vipNameControllers[widget.levelKey] ??
-            TextEditingController(text: widget.titleKey.tr);
-    final pointsCtrl =
-        widget.controller.vipPointsControllers[widget.levelKey] ??
-            TextEditingController();
-
-    widget.controller.vipNameControllers[widget.levelKey] = nameCtrl;
-    widget.controller.vipPointsControllers[widget.levelKey] = pointsCtrl;
-
-    /// GetBuilder rebuilds whenever controller.update() is called
-    return GetBuilder<LoyaltyModeController>(
-      builder: (ctrl) {
-        final activeColor =
-            ctrl.vipColors[widget.levelKey] ?? widget.defaultColor;
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Theme.of(context).colorScheme.surface,
-            border: Border.all(
-              color: _showColorPicker
-                  ? activeColor.withOpacity(0.4)
-                  : isDark
-                      ? Colors.white.withOpacity(0.06)
-                      : Colors.black.withOpacity(0.05),
-              width: _showColorPicker ? 1.5 : 1,
-            ),
-            boxShadow: _showColorPicker
-                ? [
-                    BoxShadow(
-                      color: activeColor.withOpacity(0.12),
-                      blurRadius: 20,
-                      spreadRadius: 1,
-                    )
-                  ]
-                : [],
-          ),
-          child: Column(
-            children: [
-              /// ── MAIN ROW ──
-              Padding(
-                padding: EdgeInsets.all(s.width * 0.035),
-                child: Row(
-                  children: [
-                    /// Index badge
-                    Container(
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: activeColor.withOpacity(0.15),
-                      ),
-                      child: Center(
-                        child: AppText(
-                          "${widget.index + 1}",
-                          fontSize: s.width * 0.028,
-                          fontWeight: FontWeight.w800,
-                          color: activeColor,
-                        ),
+  return AnimatedContainer(
+    duration: const Duration(milliseconds: 250),
+    curve: Curves.easeOut,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(20),
+      color: Theme.of(context).colorScheme.surface,
+      border: Border.all(
+        color: _showColorPicker
+            ? activeColor.withOpacity(0.4)
+            : isDark
+                ? Colors.white.withOpacity(0.06)
+                : Colors.black.withOpacity(0.05),
+        width: _showColorPicker ? 1.5 : 1,
+      ),
+      boxShadow: _showColorPicker
+          ? [
+              BoxShadow(
+                color: activeColor.withOpacity(0.12),
+                blurRadius: 20,
+                spreadRadius: 1,
+              )
+            ]
+          : [],
+    ),
+        child: Column(
+          children: [
+            /// ── MAIN ROW ──
+            Padding(
+              padding: EdgeInsets.all(s.width * 0.035),
+              child: Row(
+                children: [
+                  /// Index badge
+                  Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: activeColor.withOpacity(0.15),
+                    ),
+                    child: Center(
+                      child: AppText(
+                        "${widget.index + 1}",
+                        fontSize: s.width * 0.028,
+                        fontWeight: FontWeight.w800,
+                        color: activeColor,
                       ),
                     ),
+                  ),
 
-                    SizedBox(width: s.width * 0.028),
+                  SizedBox(width: s.width * 0.028),
 
-                    /// Name field
+                  /// Name field
+                  Expanded(
+                    child: TextField(
+                      controller: entry.nameController,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: s.width * 0.035,
+                        letterSpacing: -0.2,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: "vip_level_name_hint".tr,
+                        hintStyle: TextStyle(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.25)
+                              : Colors.black.withOpacity(0.25),
+                          fontWeight: FontWeight.w500,
+                          fontSize: s.width * 0.035,
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(width: s.width * 0.02),
+
+                  /// Color swatch button
+                  GestureDetector(
+                    onTap: () =>
+                        setState(() => _showColorPicker = !_showColorPicker),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: activeColor.withOpacity(0.12),
+                        border: Border.all(
+                          color: activeColor
+                              .withOpacity(_showColorPicker ? 0.6 : 0.25),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: activeColor,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: activeColor.withOpacity(0.5),
+                                  blurRadius: 6,
+                                  spreadRadius: 1,
+                                )
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          AppText(
+                            "#${activeColor.value.toRadixString(16).substring(2).toUpperCase()}",
+                            fontSize: s.width * 0.026,
+                            fontWeight: FontWeight.w600,
+                            color: activeColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            _showColorPicker
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            size: 14,
+                            color: activeColor.withOpacity(0.7),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(width: s.width * 0.018),
+
+                  /// DELETE BUTTON
+                  GestureDetector(
+                    onTap: () => widget.controller.removeVipLevel(entry.id),
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.redAccent.withOpacity(0.10),
+                      ),
+                      child: Icon(
+                        Iconsax.trash,
+                        size: s.width * 0.038,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            /// ── POINTS ROW ──
+            Padding(
+              padding: EdgeInsets.only(
+                left: s.width * 0.035,
+                right: s.width * 0.035,
+                bottom: s.width * 0.035,
+              ),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: s.width * 0.033,
+                  vertical: s.height * 0.020,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: isDark
+                      ? Colors.white.withOpacity(0.04)
+                      : Colors.black.withOpacity(0.035),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Iconsax.activity,
+                      size: s.width * 0.040,
+                      color: isDark
+                          ? Colors.white.withOpacity(0.35)
+                          : Colors.black.withOpacity(0.35),
+                    ),
+                    SizedBox(width: s.width * 0.022),
                     Expanded(
                       child: TextField(
-                        controller: nameCtrl,
+                        controller: entry.pointsController,
+                        keyboardType: TextInputType.number,
                         style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: s.width * 0.035,
-                          letterSpacing: -0.2,
+                          fontSize: s.width * 0.032,
+                          fontWeight: FontWeight.w500,
                           color: isDark ? Colors.white : Colors.black,
                         ),
                         decoration: InputDecoration(
-                          hintText: widget.titleKey.tr,
+                          hintText: "vip_from_points".tr,
                           hintStyle: TextStyle(
+                            fontSize: s.width * 0.032,
                             color: isDark
                                 ? Colors.white.withOpacity(0.25)
                                 : Colors.black.withOpacity(0.25),
-                            fontWeight: FontWeight.w500,
-                            fontSize: s.width * 0.035,
                           ),
                           border: InputBorder.none,
                           isDense: true,
@@ -269,159 +438,44 @@ class _VipLevelItemState extends State<_VipLevelItem> {
                         ),
                       ),
                     ),
-
-                    SizedBox(width: s.width * 0.02),
-
-                    /// Color swatch button
-                    GestureDetector(
-                      onTap: () =>
-                          setState(() => _showColorPicker = !_showColorPicker),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: activeColor.withOpacity(0.12),
-                          border: Border.all(
-                            color: activeColor
-                                .withOpacity(_showColorPicker ? 0.6 : 0.25),
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: activeColor,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: activeColor.withOpacity(0.5),
-                                    blurRadius: 6,
-                                    spreadRadius: 1,
-                                  )
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            AppText(
-                              "#${activeColor.value.toRadixString(16).substring(2).toUpperCase()}",
-                              fontSize: s.width * 0.026,
-                              fontWeight: FontWeight.w600,
-                              color: activeColor,
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              _showColorPicker
-                                  ? Icons.keyboard_arrow_up_rounded
-                                  : Icons.keyboard_arrow_down_rounded,
-                              size: 14,
-                              color: activeColor.withOpacity(0.7),
-                            ),
-                          ],
-                        ),
-                      ),
+                    AppText(
+                      "pts".tr,
+                      fontSize: s.width * 0.028,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? Colors.white.withOpacity(0.2)
+                          : Colors.black.withOpacity(0.2),
                     ),
                   ],
                 ),
               ),
+            ),
 
-              /// ── POINTS ROW ──
-              Padding(
-                padding: EdgeInsets.only(
-                  left: s.width * 0.035,
-                  right: s.width * 0.035,
-                  bottom: s.width * 0.035,
-                ),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: s.width * 0.033,
-                    vertical: s.height * 0.020,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: isDark
-                        ? Colors.white.withOpacity(0.04)
-                        : Colors.black.withOpacity(0.035),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Iconsax.activity,
-                        size: s.width * 0.040,
-                        color: isDark
-                            ? Colors.white.withOpacity(0.35)
-                            : Colors.black.withOpacity(0.35),
-                      ),
-                      SizedBox(width: s.width * 0.022),
-                      Expanded(
-                        child: TextField(
-                          controller: pointsCtrl,
-                          keyboardType: TextInputType.number,
-                          style: TextStyle(
-                            fontSize: s.width * 0.032,
-                            fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white : Colors.black,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: "vip_from_points".tr,
-                            hintStyle: TextStyle(
-                              fontSize: s.width * 0.032,
-                              color: isDark
-                                  ? Colors.white.withOpacity(0.25)
-                                  : Colors.black.withOpacity(0.25),
-                            ),
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                      ),
-                      AppText(
-                        "pts".tr,
-                        fontSize: s.width * 0.028,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? Colors.white.withOpacity(0.2)
-                            : Colors.black.withOpacity(0.2),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              /// ── COLOR PICKER PANEL ──
-              AnimatedSize(
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeInOut,
-                child: _showColorPicker
-                    ? _ColorPickerPanel(
-                        palette: _palette,
-                        activeColor: activeColor,
-                        isDark: isDark,
-                        size: s,
-                        onColorSelected: (color) {
-                          ctrl.vipColors[widget.levelKey] = color;
-                          ctrl.update(); // triggers GetBuilder rebuild
-                          setState(() => _showColorPicker = false);
-                        },
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+            /// ── COLOR PICKER PANEL ──
+            AnimatedSize(
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeInOut,
+              child: _showColorPicker
+                  ? _ColorPickerPanel(
+                      palette: _palette,
+                      activeColor: activeColor,
+                      isDark: isDark,
+                      size: s,
+                      onColorSelected: (color) {
+                        widget.controller.setVipLevelColor(entry.id, color);
+                        setState(() => _showColorPicker = false);
+                      },
+                    )
+                  : const SizedBox.shrink(),
+            ),
+        ],
+    ),
+  );
+}
 }
 
 /// ─────────────────────────────────────────────
-/// COLOR PICKER PANEL
+/// COLOR PICKER PANEL (unchanged)
 /// ─────────────────────────────────────────────
 class _ColorPickerPanel extends StatefulWidget {
   final List<Color> palette;
@@ -484,8 +538,6 @@ class _ColorPickerPanelState extends State<_ColorPickerPanel> {
             height: 1,
           ),
           SizedBox(height: s.height * 0.014),
-
-          /// Palette grid
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -522,10 +574,7 @@ class _ColorPickerPanelState extends State<_ColorPickerPanel> {
               );
             }).toList(),
           ),
-
           SizedBox(height: s.height * 0.014),
-
-          /// Hex input row
           Row(
             children: [
               Expanded(
@@ -615,7 +664,6 @@ class _ColorPickerPanelState extends State<_ColorPickerPanel> {
               ),
             ],
           ),
-
           if (_hexError != null) ...[
             const SizedBox(height: 4),
             AppText(

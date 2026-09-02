@@ -153,282 +153,35 @@ class _ProgramsListCardState extends State<ProgramsListCard> {
                 top: size.height * .02,
                 bottom: isLast ? size.height * .25 : 0,
               ),
-              child: _SwipeableProgramCard(
+              child: _ProgramCard(
                 program: program,
                 color: _color(program.uiMode),
                 icon: _icon(program.uiMode),
                 modeKey: _modeKey(program.uiMode),
                 isDark: isDark,
                 size: size,
+                onTapCard: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => ProgramQrDialog(
+                      programLink:
+                          program.joinUrl ??
+                          "https://vclub.app/program/ABCD1234",
+                    ),
+                  );
+                },
+                onFreeze: () => ProgramFreezeDialog.show(context, program),
+                onClients: () => AppNavigator.to(
+                  ClientsProgram(id: program.id, name: program.name),
+                ),
+                onDetails: () =>
+                    AppNavigator.to(ProgramDetailsScreen(program: program)),
               ),
             );
           },
         ),
       );
     });
-  }
-}
-
-// ── SWIPEABLE WRAPPER ─────────────────────────────────────────────────────────
-
-class _SwipeableProgramCard extends StatefulWidget {
-  const _SwipeableProgramCard({
-    required this.program,
-    required this.color,
-    required this.icon,
-    required this.modeKey,
-    required this.isDark,
-    required this.size,
-  });
-
-  final ProgramModel program;
-  final Color color;
-  final IconData icon;
-  final String modeKey;
-  final bool isDark;
-  final Size size;
-
-  @override
-  State<_SwipeableProgramCard> createState() => _SwipeableProgramCardState();
-}
-
-class _SwipeableProgramCardState extends State<_SwipeableProgramCard>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final Animation<double> _reveal;
-
-  bool get _isAr => Get.locale?.languageCode == 'ar';
-
-  double get _actionsW => widget.size.width * .48;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _reveal = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _open() => _ctrl.forward();
-  void _close() => _ctrl.reverse();
-
-  void _onDragEnd(DragEndDetails d) {
-    final v = d.primaryVelocity ?? 0;
-    if (_isAr) {
-      if (v > 200) _open();
-      if (v < -200) _close();
-    } else {
-      if (v < -200) _open();
-      if (v > 200) _close();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragEnd: _onDragEnd,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedBuilder(
-        animation: _reveal,
-        builder: (_, __) {
-          final slide = _actionsW * _reveal.value;
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Stack(
-              children: [
-                // ── ACTION BUTTONS (behind) ──────────────
-                Positioned.fill(
-                  child: Align(
-                    alignment: _isAr
-                        ? Alignment.centerLeft
-                        : Alignment.centerRight,
-                    child: SizedBox(
-                      width: _actionsW,
-                      child: _ActionButtons(
-                        isActive: widget.program.active,
-                        color: widget.color,
-                        size: widget.size,
-                        isDark: widget.isDark,
-                        isAr: _isAr,
-                        onFreeze: () {
-                          _close();
-                         ProgramFreezeDialog.show(context, widget.program);
-                        },
-                        onQr: () {
-                          _close();
-                          showDialog(
-                            context: context,
-                            builder: (_) => ProgramQrDialog(
-                              programLink:
-                                  widget.program.joinUrl ??
-                                  "https://vclub.app/program/ABCD1234",
-                            ),
-                          );
-                        },
-                        onClients: () {
-                          _close();
-                          AppNavigator.to(ClientsProgram(id: widget.program.id, name: widget.program.name));
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-
-                // ── CARD (slides) ────────────────────────
-                // ── CARD (slides) ────────────────────────
-                Transform.translate(
-                  offset: Offset(_isAr ? slide : -slide, 0),
-                  child: GestureDetector(
-                    onTap: () {
-                      if (_reveal.value > 0) {
-                        _close();
-                      } else {
-                        AppNavigator.to(
-                          ProgramDetailsScreen(program: widget.program),
-                        );
-                      }
-                    },
-                    child: _ProgramCard(
-                      program: widget.program,
-                      color: widget.color,
-                      icon: widget.icon,
-                      modeKey: widget.modeKey,
-                      isDark: widget.isDark,
-                      size: widget.size,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// ── ACTION BUTTONS ────────────────────────────────────────────────────────────
-
-class _ActionButtons extends StatelessWidget {
-  const _ActionButtons({
-    required this.color,
-    required this.size,
-    required this.isDark,
-    required this.isAr,
-    required this.isActive,
-    required this.onFreeze,
-    required this.onQr,
-    required this.onClients,
-  });
-
-  final Color color;
-  final Size size;
-  final bool isDark;
-  final bool isAr;
-  final bool isActive;   
-  final VoidCallback onFreeze;
-  final VoidCallback onQr;
-  final VoidCallback onClients;
-
-  List<Widget> _buildRow(List<Widget> buttons, double gap) {
-    final ordered = isAr ? buttons.reversed.toList() : buttons;
-    final result = <Widget>[];
-    for (int i = 0; i < ordered.length; i++) {
-      if (i > 0) result.add(SizedBox(width: gap));
-      result.add(ordered[i]);
-    }
-    return result;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final btnSize = size.width * .118;
-    final gap = size.width * .022;
-
-    final buttons = [
-      _ActionBtn(
-        icon: isActive ? Iconsax.lock : Iconsax.unlock,
-        color: isActive ? const Color(0xFFFF9F43) : const Color(0xFF00C896),
-        size: btnSize,
-        isDark: isDark,
-        onTap: onFreeze,
-      ),
-      _ActionBtn(
-        icon: Iconsax.scan_barcode,
-        color: color,
-        size: btnSize,
-        isDark: isDark,
-        onTap: onQr,
-      ),
-      _ActionBtn(
-        icon: Iconsax.profile_2user,
-        color: const Color(0xFF00C896),
-        size: btnSize,
-        isDark: isDark,
-        onTap: onClients,
-      ),
-    ];
-
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: gap,
-        vertical: size.height * .018,
-      ),
-      child: Row(
-        mainAxisAlignment: isAr
-            ? MainAxisAlignment.start
-            : MainAxisAlignment.end,
-        children: _buildRow(buttons, gap),
-      ),
-    );
-  }
-}
-
-class _ActionBtn extends StatelessWidget {
-  const _ActionBtn({
-    required this.icon,
-    required this.color,
-    required this.size,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final Color color;
-  final double size;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: color.withOpacity(.11),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(.24), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(.10),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: color, size: size * .42),
-      ),
-    );
   }
 }
 
@@ -442,6 +195,10 @@ class _ProgramCard extends StatelessWidget {
     required this.modeKey,
     required this.isDark,
     required this.size,
+    required this.onTapCard,
+    required this.onFreeze,
+    required this.onClients,
+    required this.onDetails,
   });
 
   final ProgramModel program;
@@ -450,6 +207,10 @@ class _ProgramCard extends StatelessWidget {
   final String modeKey;
   final bool isDark;
   final Size size;
+  final VoidCallback onTapCard;
+  final VoidCallback onFreeze;
+  final VoidCallback onClients;
+  final VoidCallback onDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -457,151 +218,264 @@ class _ProgramCard extends StatelessWidget {
     final statusColor = isActive
         ? const Color(0xFF00C896)
         : const Color(0xFFFF6B6B);
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
 
-    return Container(
-      decoration: BoxDecoration(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(24),
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(.07)
-              : Colors.black.withOpacity(.06),
+        onTap: onTapCard,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            color: Theme.of(context).colorScheme.surface,
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(.07)
+                  : Colors.black.withOpacity(.06),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? .26 : .05),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
+              ),
+              BoxShadow(
+                color: color.withOpacity(.06),
+                blurRadius: 32,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // ── MAIN ROW ──────────────────────────────────
+              Padding(
+                padding: EdgeInsets.all(size.width * .042),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: size.width * .128,
+                      height: size.width * .128,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        color: color.withOpacity(.10),
+                        border: Border.all(color: color.withOpacity(.20)),
+                      ),
+                      child: Icon(icon, color: color, size: size.width * .052),
+                    ),
+
+                    SizedBox(width: size.width * .038),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            program.title,
+                            fontSize: size.width * .038,
+                            fontWeight: FontWeight.w800,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: size.height * .004),
+                          AppText(
+                            program.subtitle,
+                            fontSize: size.width * .030,
+                            fontWeight: FontWeight.w500,
+                            color: isDark
+                                ? Colors.white.withOpacity(.38)
+                                : Colors.black.withOpacity(.40),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(width: size.width * .025),
+
+                    // Tap-to-scan hint icon (card itself opens the QR dialog)
+                    Container(
+                      width: size.width * .086,
+                      height: size.width * .086,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: color.withOpacity(.10),
+                        border: Border.all(color: color.withOpacity(.18)),
+                      ),
+                      child: Icon(
+                        Iconsax.scan_barcode,
+                        color: color,
+                        size: size.width * .038,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: isDark
+                    ? Colors.white.withOpacity(.055)
+                    : Colors.black.withOpacity(.05),
+              ),
+
+              // ── MODE CHIP + STATUS ─────────────────
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: size.width * .042,
+                  vertical: size.height * .012,
+                ),
+                child: Row(
+                  children: [
+                    _Chip(icon: icon, label: modeKey.tr, color: color, size: size),
+                    const Spacer(),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: size.width * .028,
+                        vertical: size.height * .005,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(.10),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: statusColor.withOpacity(.22)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: size.width * .018,
+                            height: size.width * .018,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: statusColor,
+                            ),
+                          ),
+                          SizedBox(width: size.width * .016),
+                          AppText(
+                            isActive ? "program_active".tr : "program_inactive".tr,
+                            fontSize: size.width * .028,
+                            fontWeight: FontWeight.w700,
+                            color: statusColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: isDark
+                    ? Colors.white.withOpacity(.055)
+                    : Colors.black.withOpacity(.05),
+              ),
+
+              // ── ACTION BUTTONS (in-card) ─────────────────
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  size.width * .032,
+                  size.height * .012,
+                  size.width * .032,
+                  size.height * .014,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _PillActionButton(
+                        icon: isActive ? Iconsax.lock : Iconsax.unlock,
+                        label: isActive
+                            ? "freeze_action".tr
+                            : "unfreeze_action".tr,
+                        color: isActive
+                            ? AppColors.primary
+                            : AppColors.primary,
+                        size: size,
+                        onTap: onFreeze,
+                      ),
+                    ),
+                    SizedBox(width: size.width * .022),
+                    Expanded(
+                      child: _PillActionButton(
+                        icon: Iconsax.profile_2user,
+                        label: "clients_action".tr,
+                        color: AppColors.primary,
+                        size: size,
+                        onTap: onClients,
+                      ),
+                    ),
+                    SizedBox(width: size.width * .022),
+                    Expanded(
+                      child: _PillActionButton(
+                        icon: Iconsax.document_text_1,
+                        label: "details_action".tr,
+                        color: AppColors.primary,
+                        size: size,
+                        onTap: onDetails,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? .26 : .05),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: color.withOpacity(.06),
-            blurRadius: 32,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
-      child: Column(
-        children: [
-          // ── MAIN ROW ──────────────────────────────────
-          Padding(
-            padding: EdgeInsets.all(size.width * .042),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: size.width * .128,
-                  height: size.width * .128,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    color: color.withOpacity(.10),
-                    border: Border.all(color: color.withOpacity(.20)),
-                  ),
-                  child: Icon(icon, color: color, size: size.width * .052),
-                ),
+    );
+  }
+}
 
-                SizedBox(width: size.width * .038),
+// ── IN-CARD PILL ACTION BUTTON ────────────────────────────────────────────────
 
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        program.title,
-                        fontSize: size.width * .038,
-                        fontWeight: FontWeight.w800,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: size.height * .004),
-                      AppText(
-                        program.subtitle,
-                        fontSize: size.width * .030,
-                        fontWeight: FontWeight.w500,
-                        color: isDark
-                            ? Colors.white.withOpacity(.38)
-                            : Colors.black.withOpacity(.40),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
+class _PillActionButton extends StatelessWidget {
+  const _PillActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.size,
+    required this.onTap,
+  });
 
-                SizedBox(width: size.width * .025),
+  final IconData icon;
+  final String label;
+  final Color color;
+  final Size size;
+  final VoidCallback onTap;
 
-                Container(
-                  width: size.width * .086,
-                  height: size.width * .086,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: color.withOpacity(.10),
-                    border: Border.all(color: color.withOpacity(.18)),
-                  ),
-                  child: Icon(
-                    isRtl
-                        ? Iconsax.arrow_circle_left
-                        : Iconsax.arrow_circle_right,
-                    color: color,
-                    size: size.width * .038,
-                  ),
-                ),
-              ],
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: size.height * .011),
+          decoration: BoxDecoration(
+            color: color.withOpacity(.11),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withOpacity(.22), width: 1),
           ),
-
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: isDark
-                ? Colors.white.withOpacity(.055)
-                : Colors.black.withOpacity(.05),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: size.width * .044),
+              SizedBox(height: size.height * .004),
+              AppText(
+                label,
+                fontSize: size.width * .026,
+                fontWeight: FontWeight.w700,
+                color: color,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-
-          // ── FOOTER: mode chip + status ─────────────────
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: size.width * .042,
-              vertical: size.height * .012,
-            ),
-            child: Row(
-              children: [
-                _Chip(icon: icon, label: modeKey.tr, color: color, size: size),
-                const Spacer(),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: size.width * .028,
-                    vertical: size.height * .005,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(.10),
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: statusColor.withOpacity(.22)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: size.width * .018,
-                        height: size.width * .018,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: statusColor,
-                        ),
-                      ),
-                      SizedBox(width: size.width * .016),
-                      AppText(
-                        isActive ? "program_active".tr : "program_inactive".tr,
-                        fontSize: size.width * .028,
-                        fontWeight: FontWeight.w700,
-                        color: statusColor,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -752,7 +626,6 @@ class _ShimmerProgramCardState extends State<_ShimmerProgramCard>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // footer shimmer — replace the two fixed-height boxes with:
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: size.width * .028,
@@ -770,7 +643,6 @@ class _ShimmerProgramCardState extends State<_ShimmerProgramCard>
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // footer shimmer — replace the two fixed-height boxes with:
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: size.width * .028,

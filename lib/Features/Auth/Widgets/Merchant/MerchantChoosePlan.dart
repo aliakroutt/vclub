@@ -16,61 +16,62 @@ class MerchantSignUpForm extends StatelessWidget {
     final controller = Get.put(MerchantSignUpController());
     final size = MediaQuery.of(context).size;
 
-    final plans = [
-      {
-        "title": "starter",
-        "price": "9.90€",
-        "duration": "month".tr,
-        "features": [
-          "loyalty_program",
-          "qr_code",
-          "clients_200_max",
-          "google_reviews",
-          "basic_analytics",
-        ],
-        "popular": false,
-      },
-      {
-        "title": "business",
-        "price": "19.90€",
-        "duration": "month".tr,
-        "features": [
-          "unlimited_clients",
-          "nfc_card",
-          "lucky_wheel",
-          "marketing_tools",
-          "push_notifications",
-          "campaigns",
-        ],
-        "popular": true,
-      },
-      {
-        "title": "premium",
-        "price": "29.90€",
-        "duration": "month".tr,
-        "features": [
-          "multi_location",
-          "advanced_crm",
-          "white_label",
-          "automation",
-          "api_access",
-          "multiple_employees",
-        ],
-        "popular": false,
-      },
-      {
-        "title": "quote",
-        "price": "custom".tr,
-        "duration": "",
-        "features": [
-          "custom_needs",
-          "custom_integration",
-          "dedicated_support",
-          "custom_development",
-        ],
-        "popular": false,
-      },
-    ];
+  final plans = [
+  {
+    "title": "starter",
+    "price": "9.90€",
+    "duration": "month".tr,
+    "features": [
+      "plan_limited_loyalty_program",
+      "plan_qr_code",
+      "plan_clients_200_max",
+      "plan_statistics",
+    ],
+    "popular": false,
+    "disabled": false,
+    "inherited": null,
+  },
+  {
+    "title": "business",
+    "price": "19.90€",
+    "duration": "month".tr,
+    "features": [
+      "plan_unlimited_loyalty_program",
+      "plan_unlimited_clients",
+      "plan_lucky_wheel",
+      "plan_google_reviews",
+    ],
+    "popular": true,
+    "disabled": false,
+    "inherited": "everything_in_starter".tr,
+  },
+  {
+    "title": "premium",
+    "price": "29.90€",
+    "duration": "month".tr,
+    "features": [
+      "plan_multi_access_employees",
+      "plan_marketing_campaigns",
+    ],
+    "popular": false,
+    "disabled": false,
+    "inherited": "everything_in_starter_business".tr,
+  },
+  // {
+  //   "title": "quote",
+  //   "price": "custom".tr,
+  //   "duration": "",
+  //   "features": [
+  //     "plan_custom_needs",
+  //     "plan_custom_integration",
+  //     "plan_dedicated_support",
+  //     "plan_custom_development",
+  //   ],
+  //   "popular": false,
+  //   "disabled": true,
+  //   "inherited": null,
+  // },
+];
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
@@ -109,25 +110,32 @@ class MerchantSignUpForm extends StatelessWidget {
                   SizedBox(height: size.height * 0.015),
               itemBuilder: (context, index) {
                 /// PLANS
-                if (index < plans.length) {
-                  final plan = plans[index];
+              if (index < plans.length) {
+  final plan = plans[index];
+  final isDisabled = plan["disabled"] as bool;
 
-                  return Obx(
-                    () => PlanCard(
-                      title: plan["title"].toString().tr,
-                      price: plan["price"].toString(),
-                      duration: plan["duration"].toString(),
-                      features:
-                          (plan["features"] as List)
-                              .map((e) => e.toString().tr)
-                              .toList(),
-                      isPopular: plan["popular"] as bool,
-                      isSelected:
-                          controller.selectedPlanIndex.value == index,
-                      onTap: () => controller.selectPlan(index),
-                    ),
-                  );
-                }
+  return Obx(
+    () => PlanCard(
+      title: plan["title"].toString().tr,
+      price: plan["price"].toString(),
+      duration: plan["duration"].toString(),
+      features:
+          (plan["features"] as List)
+              .map((e) => e.toString().tr)
+              .toList(),
+      isPopular: plan["popular"] as bool,
+      isDisabled: isDisabled,
+      comingSoonLabel: isDisabled ? "coming_soon".tr : null,
+      inheritedLabel: plan["inherited"] as String?,
+      isSelected:
+          controller.selectedPlanIndex.value == index && !isDisabled,
+      onTap: isDisabled ? null : () => controller.selectPlan(index),
+      showSmsOption: !isDisabled, // hide entirely on the disabled "quote" plan
+      smsSelected: controller.includeSmsAddon.value,
+      onSmsToggle: controller.toggleSmsAddon,
+    ),
+  );
+}
 
                 /// NEXT BUTTON
                 if (index == plans.length) {

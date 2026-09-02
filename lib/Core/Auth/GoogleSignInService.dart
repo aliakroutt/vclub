@@ -1,44 +1,54 @@
-// lib/Core/Auth/GoogleSignInService.dart
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-/// Wraps Firebase + google_sign_in to produce a Firebase ID token that the
-/// backend verifies (POST /auth/google, payload { idToken }).
 class GoogleSignInService {
   GoogleSignInService._();
 
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
+    // serverClientId: "192104838036-l9lqv6qsdplnaecu6qemejdc5qcsnimj.apps.googleusercontent.com"
   );
 
-  /// Runs the full Google → Firebase sign-in flow and returns the Firebase
-  /// ID token to send to the backend. Returns null if the user cancels the
-  /// picker or anything fails along the way.
   static Future<String?> signInAndGetIdToken() async {
     try {
-      // Ensure a clean state — avoids silently reusing a stale cached
-      // account if the user wants to switch Google accounts.
-      await _googleSignIn.signOut();
+      debugPrint('🔵 [Google] starting signOut...');
+      await _googleSignIn.signOut().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint('⚠️ [Google] signOut timed out, continuing anyway');
+          return null;
+        },
+      );
+      debugPrint('🔵 [Google] signOut done');
 
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      debugPrint('🔵 [Google] opening picker...');
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          debugPrint('❌ [Google] signIn() timed out after 30s — picker never resolved');
+          return null;
+        },
+      );
+
       if (googleUser == null) {
-        // User cancelled the picker.
+        debugPrint('🔵 [Google] user cancelled or timed out');
         return null;
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      debugPrint('🔵 [Google] got account: ${googleUser.email}');
 
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication.timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          debugPrint('❌ [Google] authentication step timed out');
+          throw TimeoutException('Google auth token retrieval timed out');
+        },
       );
 
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      debugPrint('🔵 [Google] got idToken: ${googleAuth.idToken != null}');
 
-      // This is the Firebase ID token — what the backend expects.
-      final idToken = await userCredential.user?.getIdToken();
-      return idToken;
+      return googleAuth.idToken;
     } catch (e) {
       debugPrint('⚠️ GoogleSignInService error: $e');
       return null;
@@ -47,7 +57,6 @@ class GoogleSignInService {
 
   static Future<void> signOut() async {
     try {
-      await FirebaseAuth.instance.signOut();
       await _googleSignIn.signOut();
     } catch (e) {
       debugPrint('⚠️ GoogleSignInService signOut error: $e');
