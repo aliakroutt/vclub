@@ -1,4 +1,4 @@
-package com.vclub.app
+package com.vclubloyalty.app
 
 import io.flutter.embedding.android.FlutterActivity
 

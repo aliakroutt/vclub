@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
+import 'package:vclub/Features/Merchant/Billing/Controllers/CurrencyController.dart';
 import 'package:vclub/Features/Merchant/Billing/Controllers/InvoicesController.dart';
-import 'package:vclub/Features/Merchant/Billing/Models/SmsAddonModel.dart';
+
 
 class BillingStatsRow extends StatelessWidget {
   const BillingStatsRow({super.key});
@@ -22,11 +23,11 @@ class BillingStatsRow extends StatelessWidget {
       final loading = controller.loading.value && !controller.initialLoaded.value;
 
       final totalPayments = summary?.succeededCount.toString() ?? "—";
-      final totalPaid = summary != null ? formatMoney(summary.totalPaidValue, summary.currency) : "—";
+      final totalPaid = summary != null ? CurrencyController.to.formatAmount(summary.totalPaidValue) : "—";
       final lastPaymentDate = summary?.lastPaymentAt != null
           ? DateFormat('d MMM yyyy').format(summary!.lastPaymentAt!)
           : "—";
-      final lastPaymentAmount = summary != null ? formatMoney(summary.lastAmountValue, summary.currency) : "—";
+      final lastPaymentAmount = summary != null ? CurrencyController.to.formatAmount(summary.lastAmountValue) : "—";
 
       final stats = [
         {

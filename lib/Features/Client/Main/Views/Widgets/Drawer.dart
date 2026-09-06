@@ -143,42 +143,42 @@ class MainDrawer extends StatelessWidget {
             ),
 
             /// ───────────────── LOGOUT (PREMIUM BUTTON) ─────────────────
-            Padding(
-              padding: EdgeInsets.all(size.width * 0.04),
-              child: GestureDetector(
-                onTap: () {},
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    color: Colors.red.withOpacity(.08),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red.withOpacity(.08),
-                        blurRadius: 15,
-                      ),
-                    ],
-                  ),
+            // Padding(
+            //   padding: EdgeInsets.all(size.width * 0.04),
+            //   child: GestureDetector(
+            //     onTap: () {},
+            //     child: Container(
+            //       padding: const EdgeInsets.all(16),
+            //       decoration: BoxDecoration(
+            //         borderRadius: BorderRadius.circular(18),
+            //         color: Colors.red.withOpacity(.08),
+            //         boxShadow: [
+            //           BoxShadow(
+            //             color: Colors.red.withOpacity(.08),
+            //             blurRadius: 15,
+            //           ),
+            //         ],
+            //       ),
 
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Iconsax.logout,
-                        color: Colors.redAccent,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      AppText(
-                        "logout",
-                        color: Colors.redAccent,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            //       child: Row(
+            //         mainAxisAlignment: MainAxisAlignment.center,
+            //         children: [
+            //           const Icon(
+            //             Iconsax.logout,
+            //             color: Colors.redAccent,
+            //             size: 20,
+            //           ),
+            //           const SizedBox(width: 10),
+            //           AppText(
+            //             "logout",
+            //             color: Colors.redAccent,
+            //             fontWeight: FontWeight.w600,
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

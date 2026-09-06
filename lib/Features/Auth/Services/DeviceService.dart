@@ -42,4 +42,28 @@ class DeviceService {
       debugPrint('$st');
     }
   }
+
+  // in DeviceService
+static Future<void> unregisterFcmToken(UserRole role) async {
+  try {
+    final token = await FirebaseMessaging.instance.getToken();
+
+    if (token == null || token.isEmpty) {
+      debugPrint('⚠️ DeviceService: no FCM token available, skipping unregister');
+      return;
+    }
+
+    // Agents use the same merchant-side devices endpoint as admins,
+    // matching how registerFcmToken already treats them.
+    final path = role == UserRole.client
+        ? ApiRoutes.client_delete_token(token)
+        : ApiRoutes.merchant_delete_token(token);
+
+    await ApiClient.delete(path);
+    debugPrint('✅ DeviceService: FCM token unregistered ($path)');
+  } catch (e, st) {
+    debugPrint('⚠️ DeviceService: failed to unregister FCM token: $e');
+    debugPrint('$st');
+  }
+}
 }

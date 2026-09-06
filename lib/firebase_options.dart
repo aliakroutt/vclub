@@ -51,19 +51,19 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDzeoD1I6nW8wJppflDeeQGRPKnMel7xUQ',
-    appId: '1:192104838036:android:26316ed95eac7e6eab5581',
+    appId: '1:192104838036:android:86ce95c566371ac4ab5581',
     messagingSenderId: '192104838036',
     projectId: 'vclub-c250f',
     storageBucket: 'vclub-c250f.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAjK9QQ3BjNhKt6wS7k37ig68q6otS5_2w',
-    appId: '1:192104838036:ios:924e8d2e2a051d5fab5581',
+    appId: '1:192104838036:ios:efecdedbda4c67b6ab5581',
     messagingSenderId: '192104838036',
     projectId: 'vclub-c250f',
     storageBucket: 'vclub-c250f.firebasestorage.app',
-    iosClientId: '192104838036-p5674ip7k8njehf664392cvlsop4js6r.apps.googleusercontent.com',
-    iosBundleId: 'com.vclub.app',
+    androidClientId: '192104838036-l9lqv6qsdplnaecu6qemejdc5qcsnimj.apps.googleusercontent.com',
+    iosClientId: '192104838036-uvm1fjo8emmkpeo3nhg63h62rc2hiuga.apps.googleusercontent.com',
+    iosBundleId: 'com.vclubloyalty.app',
   );
 }

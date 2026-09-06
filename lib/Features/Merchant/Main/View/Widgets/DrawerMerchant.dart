@@ -214,7 +214,7 @@ class MerchantMainDrawer extends StatelessWidget {
                       _item(context, Iconsax.send_2, "campaigns_merchant".tr, 6, locked: isStarter),
                       _item(context, Iconsax.chart_2, "statistics".tr, 7),
                       _item(context, Iconsax.notification, "notifications".tr, 8, locked: isStarter),
-                      _item(context, Iconsax.google_copy, "google_reviews_merchant".tr, 9),
+                      _item(context, Iconsax.google_copy, "google_reviews_merchant".tr, 9 , locked: isStarter),
 
                       _sectionTitle(context, "traceability_merchant".tr),
                       _item(context, Iconsax.activity, "activity_merchant".tr, 12, locked: isStarter || isBusiness),

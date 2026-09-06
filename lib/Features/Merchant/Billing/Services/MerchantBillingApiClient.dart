@@ -117,4 +117,11 @@ static Future<String?> getBillingPortalUrl() async {
   }
   throw Exception("Invalid billing portal response");
 }
+
+static Future<void> updateCompanyCountry(String countryCode) async {
+  await ApiClient.patch(
+    ApiRoutes.merchant_my_company,
+    data: {"countryCode": countryCode},
+  );
+}
 }

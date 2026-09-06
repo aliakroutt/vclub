@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vclub/API/ApiClient.dart';
+import 'package:vclub/API/ApiRoutes.dart';
 import 'package:vclub/Core/Snackbars.dart';
 import 'package:vclub/Features/Merchant/Billing/Models/InvoiceModel.dart';
 import 'package:vclub/Features/Merchant/Billing/View/Widgets/DownloadProgressSheet.dart';
@@ -52,65 +54,70 @@ class InvoiceActions {
 }
 
   static Future<void> downloadPdf(BuildContext context, InvoiceModel invoice) async {
-    final url = invoice.invoicePdfUrl;
-    if (url == null || url.isEmpty) {
-      AppSnackBar.error("invoice_link_unavailable".tr);
-      return;
+  final invoiceId = invoice.id;
+  if (invoiceId.isEmpty) {
+    AppSnackBar.error("invoice_link_unavailable".tr);
+    return;
+  }
+
+  final progressController = DownloadProgressController();
+  bool sheetOpen = true;
+
+  showDownloadProgressSheet(context, progressController).then((_) {
+    sheetOpen = false;
+  });
+
+  String? savePath;
+
+  try {
+    final dir = Platform.isIOS ? await getApplicationDocumentsDirectory() : await getTemporaryDirectory();
+    final fileName = "invoice_${invoice.stripeInvoiceId ?? invoice.id}.pdf";
+    savePath = "${dir.path}/$fileName";
+
+    // Authenticated request through ApiClient (Authorization header is
+    // attached automatically by ApiInterceptor, same as every other call).
+    final response = await ApiClient.instance.get<List<int>>(
+      ApiRoutes.invoicePdf(invoiceId),
+      options: Options(
+        responseType: ResponseType.bytes,
+        followRedirects: false,
+      ),
+      onReceiveProgress: (received, total) => progressController.update(received, total),
+    );
+
+    final bytes = response.data;
+    if (bytes == null || bytes.isEmpty) {
+      throw Exception("Empty PDF response");
     }
 
-    final progressController = DownloadProgressController();
-    bool sheetOpen = true;
-
-    // Show the progress sheet; don't await it here — we control its lifecycle manually.
-    showDownloadProgressSheet(context, progressController).then((_) {
-      sheetOpen = false;
-    });
-
-    String? savePath;
-
-    try {
-      final dir = Platform.isIOS ? await getApplicationDocumentsDirectory() : await getTemporaryDirectory();
-      final fileName = "invoice_${invoice.stripeInvoiceId ?? invoice.id}.pdf";
-      savePath = "${dir.path}/$fileName";
-
-      await Dio().download(
-        url,
-        savePath,
-        onReceiveProgress: (received, total) => progressController.update(received, total),
-      );
-    } catch (e) {
-      // Download itself failed — close the sheet and report, stop here.
-      if (sheetOpen && context.mounted) Navigator.of(context, rootNavigator: true).pop();
-      progressController.dispose();
-      AppSnackBar.error("invoice_download_failed".tr);
-      return;
-    }
-
-    // Close the progress sheet now that the file is fully written.
+    final file = File(savePath);
+    await file.writeAsBytes(bytes);
+  } catch (e) {
     if (sheetOpen && context.mounted) Navigator.of(context, rootNavigator: true).pop();
     progressController.dispose();
+    AppSnackBar.error("invoice_download_failed".tr);
+    return;
+  }
 
-    // Verify the file actually exists before attempting to open it.
-    final file = File(savePath);
-    if (!await file.exists()) {
-      AppSnackBar.error("invoice_download_failed".tr);
-      return;
-    }
+  if (sheetOpen && context.mounted) Navigator.of(context, rootNavigator: true).pop();
+  progressController.dispose();
 
-    // Open the downloaded file and check the REAL result — don't assume success.
-    try {
-      final result = await OpenFilex.open(savePath);
+  final file = File(savePath);
+  if (!await file.exists()) {
+    AppSnackBar.error("invoice_download_failed".tr);
+    return;
+  }
 
-      if (result.type == ResultType.done) {
-        AppSnackBar.success("invoice_downloaded".tr);
-      } else {
-        // File downloaded fine, but the OS couldn't open/preview it
-        // (e.g. no PDF viewer). Still a successful download.
-        AppSnackBar.success("invoice_downloaded_no_viewer".tr);
-      }
-    } catch (e) {
-      // Downloaded successfully even if opening threw.
+  try {
+    final result = await OpenFilex.open(savePath);
+
+    if (result.type == ResultType.done) {
+      AppSnackBar.success("invoice_downloaded".tr);
+    } else {
       AppSnackBar.success("invoice_downloaded_no_viewer".tr);
     }
+  } catch (e) {
+    AppSnackBar.success("invoice_downloaded_no_viewer".tr);
   }
+}
 }

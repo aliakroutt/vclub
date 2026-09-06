@@ -71,9 +71,8 @@ class NotificationCard extends StatelessWidget {
               children: [
                 _NotificationIcon(
                   type: notification.type,
-          
+                  logoUrl: notification.company?.logo,
                   accent: accent,
-          
                   size: size.width * .115,
                 ),
           
@@ -202,28 +201,44 @@ class NotificationCard extends StatelessWidget {
 
 class _NotificationIcon extends StatelessWidget {
   final String type;
+  final String? logoUrl;
   final Color accent;
   final double size;
 
   const _NotificationIcon({
     required this.type,
+    this.logoUrl,
     required this.accent,
     required this.size,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasLogo = logoUrl != null && logoUrl!.isNotEmpty;
+
     return Container(
       width: size,
       height: size,
-
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-
         color: accent.withOpacity(.12),
       ),
-
-      child: Icon(_icon(), color: accent, size: size * .48),
+      alignment: Alignment.center,
+      child: hasLogo
+          ? ClipOval(
+              child: Image.network(
+                logoUrl!,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return Icon(_icon(), color: accent, size: size * .48);
+                },
+                errorBuilder: (_, __, ___) => Icon(_icon(), color: accent, size: size * .48),
+              ),
+            )
+          : Icon(_icon(), color: accent, size: size * .48),
     );
   }
 

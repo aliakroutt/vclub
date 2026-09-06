@@ -87,7 +87,8 @@ static const String merchant_notifications = '/merchant/notifications/mine';
 static String merchantReadNotif(String notifId) =>
     '/merchant/notifications/$notifId/read';
 static const String merchant_notifications_readall = '/merchant/notifications/read-all';
-
+ // in ApiRoutes.dart
+static String invoicePdf(String invoiceId) => '/invoices/$invoiceId/pdf';
 
 // notifications 
 static const String client_save_token = '/devices/register';
@@ -97,5 +98,9 @@ static String client_delete_token(String token) =>
     static const String merchant_save_token = '/merchant/devices/register';
 static String merchant_delete_token(String token) =>
     '/merchant/devices/$token';
+
+
+static const String delete_account = '/auth/account';
+
 
 }

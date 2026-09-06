@@ -5,8 +5,8 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:vclub/Configs/Theme/app_colors.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
 import 'package:vclub/Core/Snackbars.dart';
+import 'package:vclub/Features/Merchant/Billing/Controllers/CurrencyController.dart';
 import 'package:vclub/Features/Merchant/Billing/Controllers/SmsAddonController.dart';
-import 'package:vclub/Features/Merchant/Billing/Models/SmsAddonModel.dart';
 import 'SmsAddonConfirmSheet.dart';
 
 class SmsAddonCard extends StatelessWidget {
@@ -89,13 +89,11 @@ class SmsAddonCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText("sms_option_title".tr, fontSize: 15.5, fontWeight: FontWeight.w800),
-                    
-                    
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-             
+
               Obx(() {
                 if (controller.toggling.value) {
                   return SizedBox(
@@ -119,7 +117,7 @@ class SmsAddonCard extends StatelessWidget {
                       fontSize: 12,
                       color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(.6),
                     ),
-                    
+
           const SizedBox(height: 14),
           Divider(height: 1, color: isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.05)),
           const SizedBox(height: 14),
@@ -162,7 +160,7 @@ class SmsAddonCard extends StatelessWidget {
                   const SizedBox(width: 9),
                   Expanded(
                     child: AppText(
-                      "${formatMoney(info.amountValue, info.currency)} ${"per_month".tr}",
+                      "${CurrencyController.to.formatAmount(info.amountValue)} ${"per_month".tr}",
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: AppColors.primary,

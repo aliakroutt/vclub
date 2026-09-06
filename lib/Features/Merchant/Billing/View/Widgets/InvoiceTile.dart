@@ -4,8 +4,8 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:vclub/Configs/Theme/app_colors.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
+import 'package:vclub/Features/Merchant/Billing/Controllers/CurrencyController.dart';
 import 'package:vclub/Features/Merchant/Billing/Models/InvoiceModel.dart';
-import 'package:vclub/Features/Merchant/Billing/Models/SmsAddonModel.dart';
 import 'package:vclub/Features/Merchant/Billing/View/Widgets/InvoiceActions.dart';
 
 class InvoiceTile extends StatelessWidget {
@@ -57,19 +57,19 @@ class InvoiceTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AppText(
-                    formatMoney(invoice.amountValue, invoice.currency),
-                    fontWeight: FontWeight.w900,
-                    fontSize: size.width * .040,
-                    color: AppColors.primary,
-                  ),
-                  SizedBox(height: size.height * .004),
-                  AppText(
-                    "invoice_amount_label".tr,
-                    fontWeight: FontWeight.w500,
-                    fontSize: size.width * .026,
-                    color: isDark ? Colors.white.withOpacity(.35) : Colors.black.withOpacity(.35),
-                  ),
+                  Obx(() => AppText(
+                        CurrencyController.to.formatAmount(invoice.amountValue),
+                        fontWeight: FontWeight.w900,
+                        fontSize: size.width * .040,
+                        color: AppColors.primary,
+                      )),
+                  // SizedBox(height: size.height * .004),
+                  // AppText(
+                  //   "invoice_amount_label".tr,
+                  //   fontWeight: FontWeight.w500,
+                  //   fontSize: size.width * .026,
+                  //   color: isDark ? Colors.white.withOpacity(.35) : Colors.black.withOpacity(.35),
+                  // ),
                 ],
               ),
             ],

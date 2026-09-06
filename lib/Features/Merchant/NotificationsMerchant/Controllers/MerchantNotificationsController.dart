@@ -21,11 +21,11 @@ class MerchantNotificationsController extends GetxController {
 
   bool get hasMore => currentPage.value < totalPages.value;
 
-  @override
-  void onInit() {
-    super.onInit();
-    fetchNotifications();
-  }
+  // @override
+  // void onInit() {
+  //   super.onInit();
+  //   fetchNotifications();
+  // }
 
   Future<void> fetchNotifications({bool refresh = false}) async {
     try {

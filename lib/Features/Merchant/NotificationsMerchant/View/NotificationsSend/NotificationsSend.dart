@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:get/get.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/ComposeNotificationController.dart';
+import 'package:vclub/Features/Merchant/NotificationsMerchant/Controllers/MerchantNotificationsController.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/View/NotificationsSend/Widgets/ComposeNotificationTab.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/View/NotificationsSend/Widgets/NotificationHeader.dart';
 import 'package:vclub/Features/Merchant/NotificationsMerchant/View/NotificationsSend/Widgets/NotificationTabs.dart';
@@ -18,9 +19,18 @@ class NotificationsSend extends StatefulWidget {
 
 class _NotificationsSendState extends State<NotificationsSend> {
    final controller = Get.find<ComposeNotificationController>();
+   final controllernotifsend = Get.find<MerchantNotificationsController>();
+   
+   @override
+  void initState() {
+   controllernotifsend.fetchNotifications();
+    super.initState();
+  }
+
   @override
   void dispose() {
     controller.resetForm();
+    
     super.dispose();
   }
   @override

@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:vclub/Configs/Theme/app_colors.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
+import 'package:vclub/Features/Merchant/Billing/Controllers/CurrencyController.dart';
 import 'package:vclub/Features/Merchant/Billing/Models/PlanModel.dart';
-import 'package:vclub/Features/Merchant/Billing/Models/SmsAddonModel.dart';
+
 
 class _TierStyle {
   final IconData icon;
@@ -25,6 +26,8 @@ class _TierStyle {
     }
   }
 }
+
+
 
 class PlanCard extends StatelessWidget {
   final PlanDisplayModel plan;
@@ -133,12 +136,12 @@ class PlanCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
-                          AppText(
-                            formatMoney(plan.price.amountValue, plan.price.currency),
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: accent,
-                          ),
+                          Obx(() => AppText(
+                                CurrencyController.to.formatAmount(plan.price.amountValue),
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: accent,
+                              )),
                           const SizedBox(width: 4),
                           AppText(
                             "/ ${"month".tr}",
@@ -177,74 +180,74 @@ class PlanCard extends StatelessWidget {
             ),
 
             const SizedBox(height: 16),
-Divider(height: 1, color: isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.05)),
-const SizedBox(height: 14),
+            Divider(height: 1, color: isDark ? Colors.white.withOpacity(.06) : Colors.black.withOpacity(.05)),
+            const SizedBox(height: 14),
 
-// ── inherited-from badge ──
-if (plan.features.inheritedKey != null) ...[
-  Container(
-    width: double.infinity,
-    padding: EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 9,
-    ),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12),
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          accent.withOpacity(0.12),
-          accent.withOpacity(0.04),
-        ],
-      ),
-      border: Border.all(
-        color: accent.withOpacity(0.18),
-        width: 1,
-      ),
-    ),
-    child: Row(
-      children: [
-        Icon(
-          Iconsax.magic_star_copy,
-          size: 15,
-          color: accent,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: AppText(
-            plan.features.inheritedKey!.tr,
-            fontSize: 12.5,
-            fontWeight: FontWeight.w700,
-            color: accent,
-          ),
-        ),
-      ],
-    ),
-  ),
-  const SizedBox(height: 12),
-],
+            // ── inherited-from badge ──
+            if (plan.features.inheritedKey != null) ...[
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 9,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      accent.withOpacity(0.12),
+                      accent.withOpacity(0.04),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: accent.withOpacity(0.18),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Iconsax.magic_star_copy,
+                      size: 15,
+                      color: accent,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: AppText(
+                        plan.features.inheritedKey!.tr,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: accent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
 
-// ── feature list ──
-...plan.features.featureKeys.map((key) => Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 1),
-            height: 19,
-            width: 19,
-            decoration: BoxDecoration(color: accent.withOpacity(.12), shape: BoxShape.circle),
-            child: Icon(Iconsax.tick_circle, size: 12.5, color: accent),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: AppText(key.tr, fontSize: 12.5, fontWeight: FontWeight.w600, height: 1.3),
-          ),
-        ],
-      ),
-    )),
+            // ── feature list ──
+            ...plan.features.featureKeys.map((key) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(top: 1),
+                        height: 19,
+                        width: 19,
+                        decoration: BoxDecoration(color: accent.withOpacity(.12), shape: BoxShape.circle),
+                        child: Icon(Iconsax.tick_circle, size: 12.5, color: accent),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: AppText(key.tr, fontSize: 12.5, fontWeight: FontWeight.w600, height: 1.3),
+                      ),
+                    ],
+                  ),
+                )),
 
             const SizedBox(height: 6),
 

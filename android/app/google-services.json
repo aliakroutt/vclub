@@ -22,6 +22,66 @@
           }
         },
         {
+          "client_id": "192104838036-ot44jnchvrr1aret1vnvg2e15lv4flef.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vclub.app",
+            "certificate_hash": "e25f605a2b0202866207e83e67e08ff0969b5a3e"
+          }
+        },
+        {
+          "client_id": "192104838036-adico52eophcvb476vj94ufretr7sgn2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzeoD1I6nW8wJppflDeeQGRPKnMel7xUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "192104838036-adico52eophcvb476vj94ufretr7sgn2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "192104838036-p5674ip7k8njehf664392cvlsop4js6r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.vclub.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192104838036:android:86ce95c566371ac4ab5581",
+        "android_client_info": {
+          "package_name": "com.vclubloyalty.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "192104838036-67e3h2og9emvo7tah8d4bvv38cc86cl8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vclubloyalty.app",
+            "certificate_hash": "e1e21fcdd4288eb8acdd4f003aa97bb45cb45b65"
+          }
+        },
+        {
+          "client_id": "192104838036-psglutmhthbg9c6jbr1qeebhh1qs6053.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vclubloyalty.app",
+            "certificate_hash": "e25f605a2b0202866207e83e67e08ff0969b5a3e"
+          }
+        },
+        {
           "client_id": "192104838036-adico52eophcvb476vj94ufretr7sgn2.apps.googleusercontent.com",
           "client_type": 3
         }

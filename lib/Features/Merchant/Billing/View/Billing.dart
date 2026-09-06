@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
 import 'package:vclub/Core/Storage/Controllers/MerchantController.dart';
 import 'package:vclub/Core/Widgets/animated_entry.dart';
+import 'package:vclub/Features/Merchant/Billing/Controllers/CurrencyController.dart';
 import 'package:vclub/Features/Merchant/Billing/Controllers/PlansController.dart';
 import 'package:vclub/Features/Merchant/Billing/Controllers/SmsAddonController.dart';
 import 'package:vclub/Features/Merchant/Billing/View/Widgets/BillingHeaderCard.dart';
@@ -13,6 +14,7 @@ import 'package:vclub/Features/Merchant/Billing/View/Widgets/CancelPlanChoiceShe
 import 'package:vclub/Features/Merchant/Billing/View/Widgets/CancellationPendingCard.dart';
 import 'package:vclub/Features/Merchant/Billing/View/Widgets/ChangePlanCard.dart';
 import 'package:vclub/Features/Merchant/Billing/View/Widgets/ChangePlanSheet.dart';
+import 'package:vclub/Features/Merchant/Billing/View/Widgets/CurrencyCard.dart';
 import 'package:vclub/Features/Merchant/Billing/View/Widgets/InvoiceHistoryCard.dart';
 import 'package:vclub/Features/Merchant/Billing/View/Widgets/SmsAddonCard.dart';
 
@@ -31,6 +33,9 @@ class _BillingState extends State<Billing> {
     }
     if (!Get.isRegistered<PlansController>()) {
       Get.put(PlansController());
+    }
+    if (!Get.isRegistered<CurrencyController>()) {
+      Get.put(CurrencyController());
     }
     final controller = Get.find<SmsAddonController>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -102,12 +107,16 @@ class _BillingState extends State<Billing> {
 
                   SizedBox(height: size.height * 0.02),
 
+                  FadeSlide(delayMs: 260, child: const CurrencyCard()), // ← add
+
+                  SizedBox(height: size.height * 0.02),
+
                   Obx(() {
                     final company =
                         MerchantController.to.merchant.value?.company;
 
                     return FadeSlide(
-                      delayMs: 250,
+                      delayMs: 280,
                       child: CompanyHeaderCard(
                         company: company,
                         onManageSubscription: () async {
@@ -138,7 +147,7 @@ class _BillingState extends State<Billing> {
                       children: [
                         SizedBox(height: size.height * 0.02),
                         FadeSlide(
-                          delayMs: 270,
+                          delayMs: 280,
                           child: CancellationPendingCard(
                             subscriptionEndsAt: company?.subscriptionEndsAt,
                           ),
@@ -156,18 +165,18 @@ class _BillingState extends State<Billing> {
                             company!.stripePlan!.isEmpty);
 
                     return FadeSlide(
-                      delayMs: 280,
+                      delayMs: 290,
                       child: ChangePlanCard(isFreePlan: isFreePlan),
                     );
                   }),
 
                   SizedBox(height: size.height * 0.02),
-                  const FadeSlide(delayMs: 290, child: SmsAddonCard()),
+                  const FadeSlide(delayMs: 300, child: SmsAddonCard()),
 
                   SizedBox(height: size.height * 0.02),
-                  FadeSlide(delayMs: 320, child: BillingStatsRow()),
+                  FadeSlide(delayMs: 310, child: BillingStatsRow()),
                   SizedBox(height: size.height * 0.02),
-                  FadeSlide(delayMs: 350, child: InvoiceHistoryCard()),
+                  FadeSlide(delayMs: 320, child: InvoiceHistoryCard()),
 
                   SizedBox(height: size.height * 0.15),
                 ],

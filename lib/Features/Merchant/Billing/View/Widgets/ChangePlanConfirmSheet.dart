@@ -4,11 +4,12 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:vclub/Configs/Theme/app_colors.dart';
 import 'package:vclub/Configs/Theme/app_text.dart';
+import 'package:vclub/Features/Merchant/Billing/Controllers/CurrencyController.dart';
 import 'package:vclub/Features/Merchant/Billing/Controllers/PlansController.dart';
 import 'package:vclub/Features/Merchant/Billing/Controllers/SmsAddonController.dart';
 import 'package:vclub/Features/Merchant/Billing/Models/ChangePlanModel.dart';
 import 'package:vclub/Features/Merchant/Billing/Models/PlanModel.dart';
-import 'package:vclub/Features/Merchant/Billing/Models/SmsAddonModel.dart';
+
 
 Future<ChangePlanResult?> showChangePlanConfirmSheet(BuildContext context, PlanDisplayModel plan) async {
   final plansController = Get.find<PlansController>();
@@ -99,13 +100,13 @@ Future<ChangePlanResult?> showChangePlanConfirmSheet(BuildContext context, PlanD
                     children: [
                       _PriceRow(
                         label: plan.features.titleKey.tr,
-                        value: formatMoney(plan.price.amountValue, plan.price.currency),
+                        value: CurrencyController.to.formatAmount(plan.price.amountValue),
                       ),
                       if (showSmsLine) ...[
                         const SizedBox(height: 8),
                         _PriceRow(
                           label: "sms_option_title".tr,
-                          value: "+ ${formatMoney(smsInfo.amountValue, smsInfo.currency)}",
+                          value: "+ ${CurrencyController.to.formatAmount(smsInfo.amountValue)}",
                           valueColor: AppColors.primary,
                         ),
                       ],
@@ -114,7 +115,7 @@ Future<ChangePlanResult?> showChangePlanConfirmSheet(BuildContext context, PlanD
                       const SizedBox(height: 10),
                       _PriceRow(
                         label: "total_due_label".tr,
-                        value: "${formatMoney(total, plan.price.currency)} / ${"month".tr}",
+                        value: "${CurrencyController.to.formatAmount(total)} / ${"month".tr}",
                         bold: true,
                         valueColor: AppColors.primary,
                       ),
@@ -186,7 +187,7 @@ Future<ChangePlanResult?> showChangePlanConfirmSheet(BuildContext context, PlanD
                                 const SizedBox(width: 7),
                                 Expanded(
                                   child: AppText(
-                                    "${"sms_addon_charge_notice".tr} ${formatMoney(smsController.info.value!.amountValue, smsController.info.value!.currency)} / ${"month".tr}.",
+                                    "${"sms_addon_charge_notice".tr} ${CurrencyController.to.formatAmount(smsController.info.value!.amountValue)} / ${"month".tr}.",
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.primary,

@@ -11,44 +11,85 @@ class BonusRulesCard extends StatelessWidget {
 
   static const _accent = Color(0xFFE8640C);
 
- final eventTypes = [
-  "birthday",
-  "first_purchase",
-  "multiplier",
-  "referral",
-];
+  final eventTypes = [
+    "birthday",
+    "first_purchase",
+    "multiplier",
+    "referral",
+  ];
 
   IconData _icon(String type) {
-  switch (type) {
-    case "birthday":
-      return Iconsax.cake;
-    case "first_purchase":
-      return Iconsax.shopping_bag;
-    case "multiplier":
-      return Iconsax.activity;
-    case "referral":
-      return Iconsax.user_add;
-    default:
-      return Iconsax.gift;
+    switch (type) {
+      case "birthday":
+        return Iconsax.cake;
+      case "first_purchase":
+        return Iconsax.shopping_bag;
+      case "multiplier":
+        return Iconsax.activity;
+      case "referral":
+        return Iconsax.user_add;
+      default:
+        return Iconsax.gift;
+    }
   }
-}
 
-String _desc(String type) {
-  switch (type) {
-    case "birthday":
-      return "birthday_desc".tr;
-    case "first_purchase":
-      return "first_purchase_desc".tr;
-    case "multiplier":
-      return "multiplier_desc".tr;
-    case "referral":
-      return "referral_desc".tr;
-    default:
-      return "";
+  /// Description now depends on both the bonus type AND the program mode,
+  /// since the unit being awarded (points / stamps / cashback) changes
+  /// what the sentence should say.
+  String _desc(String type, LoyaltyMode mode) {
+    switch (type) {
+      case "birthday":
+        switch (mode) {
+          case LoyaltyMode.points:
+            return "birthday_desc_points".tr;
+          case LoyaltyMode.stamps:
+            return "birthday_desc_stamps".tr;
+          case LoyaltyMode.cashback:
+            return "birthday_desc_cashback".tr;
+        }
+      case "first_purchase":
+        switch (mode) {
+          case LoyaltyMode.points:
+            return "first_purchase_desc_points".tr;
+          case LoyaltyMode.stamps:
+            return "first_purchase_desc_stamps".tr;
+          case LoyaltyMode.cashback:
+            return "first_purchase_desc_cashback".tr;
+        }
+      case "multiplier":
+        switch (mode) {
+          case LoyaltyMode.points:
+            return "multiplier_desc_points".tr;
+          case LoyaltyMode.stamps:
+            return "multiplier_desc_stamps".tr;
+          case LoyaltyMode.cashback:
+            return "multiplier_desc_cashback".tr;
+        }
+      case "referral":
+        switch (mode) {
+          case LoyaltyMode.points:
+            return "referral_desc_points".tr;
+          case LoyaltyMode.stamps:
+            return "referral_desc_stamps".tr;
+          case LoyaltyMode.cashback:
+            return "referral_desc_cashback".tr;
+        }
+      default:
+        return "";
+    }
   }
-}
 
-  
+  /// Unit suffix shown in the points/amount input's hint and style.
+  String _unitLabel(LoyaltyMode mode) {
+    switch (mode) {
+      case LoyaltyMode.points:
+        return "pts";
+      case LoyaltyMode.stamps:
+        return "unit_stamps".tr;
+      case LoyaltyMode.cashback:
+        return "€";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +100,7 @@ String _desc(String type) {
       padding: EdgeInsets.all(size.width * 0.045),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-       color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).colorScheme.surface,
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.06)
@@ -161,6 +202,8 @@ String _desc(String type) {
               return _EmptyState(isDark: isDark, size: size);
             }
 
+            final mode = controller.selectedMode.value;
+
             return Column(
               children: List.generate(controller.bonusRules.length, (index) {
                 final rule = controller.bonusRules[index];
@@ -179,7 +222,8 @@ String _desc(String type) {
                     controller: controller,
                     eventTypes: eventTypes,
                     icon: _icon(rule.type),
-                    desc: _desc(rule.type),
+                    desc: _desc(rule.type, mode),
+                    unitLabel: _unitLabel(mode),
                   ),
                 );
               }),
@@ -204,6 +248,7 @@ class _RuleRow extends StatelessWidget {
   final List<String> eventTypes;
   final IconData icon;
   final String desc;
+  final String unitLabel;
 
   static const _accent = Color(0xFFE8640C);
 
@@ -217,6 +262,7 @@ class _RuleRow extends StatelessWidget {
     required this.eventTypes,
     required this.icon,
     required this.desc,
+    required this.unitLabel,
   });
 
   @override
@@ -363,7 +409,7 @@ class _RuleRow extends StatelessWidget {
             ),
           ),
 
-          /// ── MIDDLE ROW: pts input (expanded) + delete ─────────
+          /// ── MIDDLE ROW: amount input (expanded) + delete ─────────
           Padding(
             padding: EdgeInsets.fromLTRB(
               size.width * 0.038,
@@ -373,7 +419,7 @@ class _RuleRow extends StatelessWidget {
             ),
             child: Row(
               children: [
-                /// points input — takes all remaining width
+                /// amount input — takes all remaining width
                 Expanded(
                   child: SizedBox(
                     height: 40,
@@ -388,7 +434,7 @@ class _RuleRow extends StatelessWidget {
                       ),
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
-                        hintText: "0 pts",
+                        hintText: "0 $unitLabel",
                         hintStyle: TextStyle(
                           fontSize: size.width * 0.032,
                           color: isDark
@@ -469,7 +515,7 @@ class _RuleRow extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Empty state
+//  Empty state (unchanged)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {

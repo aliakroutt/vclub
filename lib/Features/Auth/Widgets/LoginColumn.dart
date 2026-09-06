@@ -71,7 +71,7 @@ class _LoginColumnState extends State<LoginColumn> {
             FadeSlide(delayMs: 500, child: ForgetPasswordText(onTap: () {
              AppNavigator.to(ForgetPassword());
             })),
-            SizedBox(height: size.height * 0.042),
+            SizedBox(height: size.height * 0.032),
             FadeSlide(
               delayMs: 600,
               child: AppButton(
@@ -82,9 +82,9 @@ class _LoginColumnState extends State<LoginColumn> {
               ),
             ),
 
-            SizedBox(height: size.height * 0.032),
+            SizedBox(height: size.height * 0.026),
             FadeSlide(delayMs: 650, child: _OrDivider()),
-            SizedBox(height: size.height * 0.032),
+            SizedBox(height: size.height * 0.026),
 
             FadeSlide(
               delayMs: 680,
@@ -94,8 +94,19 @@ class _LoginColumnState extends State<LoginColumn> {
                   )),
             ),
 
+            SizedBox(height: size.height * 0.016),
+
+            FadeSlide(
+              delayMs: 700,
+              child: _AppleSignInButton(
+                onTap: () {
+                  // TODO: wire Apple Sign-In
+                },
+              ),
+            ),
+
             SizedBox(height: size.height * 0.042),
-            FadeSlide(delayMs: 700, child: AuthFooterText(onTap: () {
+            FadeSlide(delayMs: 720, child: AuthFooterText(onTap: () {
             AppNavigator.to(SignUp());
             })),
           ],
@@ -190,6 +201,61 @@ class _GoogleSignInButton extends StatelessWidget {
                       ),
                     ],
                   ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AppleSignInButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AppleSignInButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Apple's own brand guidelines favor solid black (or white in dark
+    // mode) buttons rather than a bordered/outline style like Google's.
+    final bg = isDark ? Colors.white : Colors.black;
+    final fg = isDark ? Colors.black : Colors.white;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(50),
+        child: Ink(
+          height: 54,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            color: bg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.15 : 0.12),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Iconsax.apple_copy, size: 20, color: fg),
+                const SizedBox(width: 10),
+                Text(
+                  'continue_with_apple'.tr,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: fg,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
